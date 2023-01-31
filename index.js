@@ -1,4 +1,4 @@
-      treeJson = d3.json("data.json", function(error, treeData) {
+      treeJson = d3.json(thefile, function(error, treeData) {
       	dTree.init(treeData,
 					{
 						target: "#graph",
