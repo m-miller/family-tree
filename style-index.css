@@ -1,0 +1,37 @@
+	body {
+		font: 1rem sans-serif;
+		background-color: white;
+	}
+	h1 {
+		color: black;
+	}
+	p {
+		padding:0;
+		margin:0;
+		font-size: 1rem;
+	}
+	.container {
+		display: flex;
+	}
+	#bdays, #ddays, #names, #ages {
+		background-color: #ccc;
+		border: 1px solid #ccc;
+		width: 20%;
+		padding: 1rem;
+		margin: 1rem;
+		border-radius: 10px;
+		display: flex;
+		flex-direction: column;
+	}
+	table {
+		border-spacing: 0;
+		background-color: white;
+	}
+	td {
+		border: 1px solid #ccc;
+		padding: .25rem;
+	}
+  #charts {
+    flex-direction: column;
+  }
+	
