@@ -453,95 +453,97 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         children: []
       };
 
-      var reconstructTree = function reconstructTree(person, parent) {
+var reconstructTree = function reconstructTree(person, parent) {
+  // Convert to person to d3 node
+  var node = {
+    name: person.name,
+    id: id++,
+    hidden: false,
+    children: [],
+    extra: person.extra,
+    textClass: person.textClass ? person.textClass : opts.styles.text,
+    'class': person['class'] ? person['class'] : opts.styles.node
+  };
 
-        // convert to person to d3 node
-        var node = {
-          name: person.name,
-          id: id++,
-          hidden: false,
-          children: [],
-          extra: person.extra,
-          textClass: person.textClass ? person.textClass : opts.styles.text,
-          'class': person['class'] ? person['class'] : opts.styles.node
-        };
+  // Hide linages to the hidden root node
+  if (parent == root) {
+    node.noParent = true;
+  }
 
-        // hide linages to the hidden root node
-        if (parent == root) {
-          node.noParent = true;
-        }
+  // Apply depth offset
+  for (var i = 0; i < person.depthOffset; i++) {
+    var pushNode = {
+      name: '',
+      id: id++,
+      hidden: true,
+      children: [],
+      noParent: node.noParent
+    };
+    parent.children.push(pushNode);
+    parent = pushNode;
+  }
 
-        // apply depth offset
-        for (var i = 0; i < person.depthOffset; i++) {
-          var pushNode = {
-            name: '',
-            id: id++,
-            hidden: true,
-            children: [],
-            noParent: node.noParent
-          };
-          parent.children.push(pushNode);
-          parent = pushNode;
-        }
+  // Sort children
+  dTree._sortPersons(person.children, opts);
 
-        // sort children
-        dTree._sortPersons(person.children, opts);
+  // Add "direct" children
+  _.forEach(person.children, function (child) {
+    reconstructTree(child, node);
+  });
 
-        // add "direct" children
-        _.forEach(person.children, function (child) {
-          reconstructTree(child, node);
-        });
+  parent.children.push(node);
 
-        parent.children.push(node);
+  // Sort marriages
+  dTree._sortMarriages(person.marriages, opts);
 
-        //sort marriages
-        dTree._sortMarriages(person.marriages, opts);
+  // Process each marriage
+  _.forEach(person.marriages, function (marriage, index) {
+    var m = {
+      name: '',
+      id: id++,
+      hidden: opts.hideMarriageNodes,
+      noParent: true,
+      children: [],
+      isMarriage: true,
+      extra: marriage.extra,
+      'class': marriage['class'] ? marriage['class'] : opts.styles.marriageNode
+    };
 
-        // go through marriage
-        _.forEach(person.marriages, function (marriage, index) {
-          var m = {
-            name: '',
-            id: id++,
-            hidden: opts.hideMarriageNodes,
-            noParent: true,
-            children: [],
-            isMarriage: true,
-            extra: marriage.extra,
-            'class': marriage['class'] ? marriage['class'] : opts.styles.marriageNode
-          };
+    var sp = marriage.spouse;
 
-          var sp = marriage.spouse;
+    var spouse = {
+      name: sp.name,
+      id: id++,
+      hidden: false,
+      noParent: true,
+      children: [],
+      textClass: sp.textClass ? sp.textClass : opts.styles.text,
+      'class': sp['class'] ? sp['class'] : opts.styles.node,
+      extra: sp.extra,
+      marriageNode: m
+    };
 
-          var spouse = {
-            name: sp.name,
-            id: id++,
-            hidden: false,
-            noParent: true,
-            children: [],
-            textClass: sp.textClass ? sp.textClass : opts.styles.text,
-            'class': sp['class'] ? sp['class'] : opts.styles.node,
-            extra: sp.extra,
-            marriageNode: m
-          };
+    parent.children.push(m, spouse);
 
-          parent.children.push(m, spouse);
+    // Process spouse's children
+    dTree._sortPersons(marriage.children, opts);
+    _.forEach(marriage.children, function (child) {
+      reconstructTree(child, m);
+    });
 
-          dTree._sortPersons(marriage.children, opts);
-          _.forEach(marriage.children, function (child) {
-            reconstructTree(child, m);
-          });
+    // Register siblings for marriage connections
+    siblings.push({
+      source: {
+        id: node.id
+      },
+      target: {
+        id: spouse.id
+      },
+      number: index
+    });
+  });
+};
 
-          siblings.push({
-            source: {
-              id: node.id
-            },
-            target: {
-              id: spouse.id
-            },
-            number: index
-          });
-        });
-      };
 
       _.forEach(data, function (person) {
         reconstructTree(person, root);
