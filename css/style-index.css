@@ -32,16 +32,22 @@ h1 {
 	stroke-dasharray: 3,3;
 }
 .man {
-	background-color: lightgrey;
+	background-color: hsl(0, 0%, 83%);
 	border-style: solid;
 	border-width: 1px;
 	box-sizing: border-box;
 }
+.man:hover {
+	background-color: hsl(0, 0%, 63%);
+}
 .woman {
-	background-color: lightgreen;
+	background-color: hsl(120, 73%, 75%);
 	border-style: solid;
 	border-width: 1px;
 	box-sizing: border-box;
+}
+.woman:hover {
+	background-color: hsl(120, 73%, 55%);
 }
 .emphasis{
 	font-style: italic;
@@ -64,12 +70,18 @@ div > p {
 	font-size: .75rem;
 	letter-spacing: -0.3px;
 }
-.p-head {
+#head-info {
 	color: white;
 }
-.p-head a {
-	text-decoration: underline;
+#head-info a {
+	text-decoration-style: underline;
 	color: white;
+}
+#head-info a:hover {
+	color: lightgreen;
+	text-decoration-style: dashed;
+	text-decoration-color: lightgreen;
+	text-decoration-thickness: 3px;
 }
 .halfrem {
 	font-size: .5rem;

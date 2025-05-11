@@ -2549,7 +2549,7 @@
                                                      "marriages":[
                                                         {
                                                            "spouse":{
-                                                              "name":"Mary Janet Parmenter",
+                                                              "name":"*Mary Janet Parmenter",
                                                               "class":"woman",
                                                               "extra":{
                                                                  "birthdate":"11 Apr 1916",
@@ -2574,7 +2574,7 @@
                                                                  "buried":"",
                                                                  "buried_link":"",
                                                                  "buried_grave":"",
-                                                                 "notes":"Adopted as a child"
+                                                                 "notes":"*Adopted as a child"
                                                               }
                                                            },
                                                            "children":[

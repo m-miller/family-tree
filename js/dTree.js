@@ -177,15 +177,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         if (d.target.data.noParent) {
           return 'M0,0L0,0';
         }
-        
         var ny = Math.round(d.target.y + (d.source.y - d.target.y) * 0.50);
         var radius = 7;
         var path = '';
-        
         // Check if source and target are aligned horizontally or vertically
         var isHorizontallyAligned = Math.abs(d.source.y - d.target.y) < 20; // Threshold for considering nodes aligned
         var isVerticallyAligned = Math.abs(d.source.x - d.target.x) < 20;
-        
         // If nodes are aligned, draw a direct straight line
         if (isHorizontallyAligned || isVerticallyAligned) {
           path += 'M' + d.target.x + ',' + d.target.y;
