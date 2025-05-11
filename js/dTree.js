@@ -202,7 +202,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           if (d.source.x > d.target.x) {
             // Curve to the right
             path += ' Q' + d.target.x + ',' + ny + ' ' + (d.target.x + radius) + ',' + ny;
-            
             // Horizontal line
             if (Math.abs(d.source.x - d.target.x) > 2*radius) {
               path += ' L' + (d.source.x - radius) + ',' + ny;
@@ -229,7 +228,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           path += ' L' + d.source.x + ',' + ny;
           path += ' L' + d.source.x + ',' + d.source.y;
         }
-        
         return path;
       } 
     }, {
