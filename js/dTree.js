@@ -171,31 +171,67 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         return n;
       }
     }, {
+     // rounded corners for node connections
       key: '_elbow',
       value: function _elbow(d, i) {
         if (d.target.data.noParent) {
           return 'M0,0L0,0';
         }
+        
         var ny = Math.round(d.target.y + (d.source.y - d.target.y) * 0.50);
-
-        var linedata = [{
-          x: d.target.x,
-          y: d.target.y
-        }, {
-          x: d.target.x,
-          y: ny
-        }, {
-          x: d.source.x,
-          y: d.source.y
-        }];
-
-        var fun = d3.line().curve(d3.curveStepAfter).x(function (d) {
-          return d.x;
-        }).y(function (d) {
-          return d.y;
-        });
-        return fun(linedata);
-      }
+        var radius = 7;
+        var path = '';
+        
+        // Check if source and target are aligned horizontally or vertically
+        var isHorizontallyAligned = Math.abs(d.source.y - d.target.y) < 20; // Threshold for considering nodes aligned
+        var isVerticallyAligned = Math.abs(d.source.x - d.target.x) < 20;
+        
+        // If nodes are aligned, draw a direct straight line
+        if (isHorizontallyAligned || isVerticallyAligned) {
+          path += 'M' + d.target.x + ',' + d.target.y;
+          path += ' L' + d.source.x + ',' + d.source.y;
+          return path;
+        }
+        // Otherwise, create path with rounded corners as before
+        path += 'M' + d.target.x + ',' + d.target.y;
+        // Vertical line (with rounded corner)
+        if (Math.abs(ny - d.target.y) > radius) {
+          // Straight vertical line to the bend, minus the radius
+          path += ' L' + d.target.x + ',' + (ny - (ny > d.target.y ? radius : -radius));
+          // Rounded corner
+          if (d.source.x > d.target.x) {
+            // Curve to the right
+            path += ' Q' + d.target.x + ',' + ny + ' ' + (d.target.x + radius) + ',' + ny;
+            
+            // Horizontal line
+            if (Math.abs(d.source.x - d.target.x) > 2*radius) {
+              path += ' L' + (d.source.x - radius) + ',' + ny;
+            }
+            // Final curve to the source
+            path += ' Q' + d.source.x + ',' + ny + ' ' + d.source.x + ',' + (ny + (d.source.y > ny ? radius : -radius));
+          } else {
+            // Curve to the left
+            path += ' Q' + d.target.x + ',' + ny + ' ' + (d.target.x - radius) + ',' + ny;
+            // Horizontal line
+            if (Math.abs(d.source.x - d.target.x) > 2*radius) {
+              path += ' L' + (d.source.x + radius) + ',' + ny;
+            }
+            // Final curve to the source
+            path += ' Q' + d.source.x + ',' + ny + ' ' + d.source.x + ',' + (ny + (d.source.y > ny ? radius : -radius));
+          }
+          // Final straight line to the source
+          if (Math.abs(d.source.y - ny) > radius) {
+            path += ' L' + d.source.x + ',' + d.source.y;
+          }
+        } else {
+          // If the vertical segment is too short for a rounded corner, just draw a straight line
+          path += ' L' + d.target.x + ',' + ny;
+          path += ' L' + d.source.x + ',' + ny;
+          path += ' L' + d.source.x + ',' + d.source.y;
+        }
+        
+        return path;
+      } 
     }, {
       key: '_linkSiblings',
       value: function _linkSiblings() {
