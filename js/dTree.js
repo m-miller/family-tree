@@ -2,6 +2,7 @@ var _createClass = (function () { function defineProperties(target, props) { for
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
+
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() : typeof define === 'function' && define.amd ? define(factory) : global.dTree = factory();
 })(this, function () {
@@ -95,7 +96,16 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         this._linkSiblings();
 
         // Draw siblings (marriage)
-        this.g.selectAll('.sibling').data(this.siblings).enter().append('path').attr('class', opts.styles.marriage).attr('d', _.bind(this._siblingLine, this));
+        //this.g.selectAll('.sibling').data(this.siblings).enter().append('path').attr('class', opts.styles.marriage).attr('d', _.bind(this._siblingLine, this));
+        this.g.selectAll('.sibling')
+        .data(this.siblings)
+        .enter()
+        .append('path')
+        .attr('class', function(d) {
+
+          return d.number > 0 ? opts.styles.nthMarriage : opts.styles.marriage;
+        })
+        .attr('d', _.bind(this._siblingLine, this));
 
         // Create the node rectangles.
         nodes.append('foreignObject').filter(function (d) {
@@ -354,7 +364,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         debug: false,
         width: 600,
         height: 600,
-        hideMarriageNodes: true,
+        hideMarriageNodes: false,
         callbacks: {
           nodeClick: function nodeClick(name, extra, id) {},
           nodeRightClick: function nodeRightClick(name, extra, id) {},
@@ -395,6 +405,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           marriageNode: 'marriageNode',
           linage: 'linage',
           marriage: 'marriage',
+          nthMarriage: 'nthMarriage',
           text: 'nodeText'
         }
       });
@@ -512,6 +523,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
           var sp = marriage.spouse;
 
+          var spouseClass = sp['class'] ? sp['class'] : opts.styles.node;
+
+          if (index > 0) {
+            spouseClass += ' spouse-' + index;
+          }
+
           var spouse = {
             name: sp.name,
             id: id++,
@@ -519,7 +536,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             noParent: true,
             children: [],
             textClass: sp.textClass ? sp.textClass : opts.styles.text,
-            'class': sp['class'] ? sp['class'] : opts.styles.node,
+            //'class': sp['class'] ? sp['class'] : opts.styles.node,
+            'class': spouseClass, // Use our modified class
             extra: sp.extra,
             marriageNode: m
           };

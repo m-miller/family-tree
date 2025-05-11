@@ -220,16 +220,52 @@ var svg = d3.select(divid)
   svg.append("g")
     .call(d3.axisLeft(y));
 
+    const tooltip = d3.select(divid).append('div')
+    .attr('class', 'tooltip')
+    .style('opacity', 0);
+
+    //var headerNames = d3.keys(data[0]);
+
   // Bars
   svg.selectAll("mybar")
     .data(data)
     .enter()
     .append("rect")
+    .attr('class', 'bar')
     .attr("x", function(d) { return x(d[ex]); })
     .attr("y", function(d) { return y(d[why]); })
     .attr("width", x.bandwidth())
     .attr("height", function(d) { return height - y(d[why]); })
     .attr("fill", color)
+    // no bar at the beginning thus:
+    .attr("height", function(d) { return height - y(0); }) // always equal to 0
+    .attr("y", function(d) { return y(0); })
+    .on("mouseover", function(d) {
+      tooltip.transition()
+      .duration(200)
+      .style("opacity", .8);
+
+      tooltip.html( d[ex] + ", " + d[why])
+      .attr('class', 'tooltip')
+      .style('left', `${d3.event.layerX - 10}px`)
+      .style('top', `${(d3.event.layerY - 40)}px`);
+      })
+
+      .on("mouseout", function(d) {
+      tooltip.transition()
+      .duration(500)
+      .style("opacity", 0);
+      });
+      
+    // Animation
+svg.selectAll("rect")
+.transition()
+.duration(800)
+.attr("y", function(d) { return y(d[why]); })
+.attr("height", function(d) { return height - y(d[why]); })
+.delay(function(d,i){ return(i*100)})
+
+
 }
 
 barchart(namescsv, '#namesgraph', 'name', 'count', '#045FB4');

@@ -1,10 +1,11 @@
       treeJson = d3.json(thefile, function(error, treeData) {
       	dTree.init(treeData,
+
 					{
 						target: "#graph",
 						debug: true,
 						hideMarriageNodes: true,
-						marriageNodeSize: 5,
+						marriageNodeSize: 3,
 						height: 800,
 						width: 1200,
 						callbacks: {
@@ -81,12 +82,35 @@
 								return "<p align='center' class='" + textClass + "'>" + name + "</p>";
 								}
 							},
+							/*
 							marriageClick: function(extra, id) {
 								alert('Clicked marriage node' + extra.birthplace_name);
 							},
 							marriageRightClick: function(extra, id) {
 								alert('Right-clicked marriage node' + id);
 							},
+							*/
 						}
 					});
+
+					function generateSpouseColorCSS() {
+						var css = '';
+						for (var i = 1; i < 10; i++) {
+						  var borderOpacity = 0.3 + (i * 0.1); 
+						  css += '.spouse-' + i + ' {\n';
+						  css += '  border-left: 5px solid rgba(0, 0, 0, ' + borderOpacity + ');\n';
+						  css += '}\n';
+						}
+						return css;
+					  }
+					  
+					function setupDynamicSpouseColors() {
+						var style = document.createElement('style');
+						style.type = 'text/css';
+						style.innerHTML = generateSpouseColorCSS();
+						document.head.appendChild(style);
+					  }
+					  
+					  setupDynamicSpouseColors();
+					  
     	});
