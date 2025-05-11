@@ -60,11 +60,18 @@
 								}
 								
 				                $("body").on("click", "foreignObject", function(){
-								if ($('.info').is(":visible")){
-									$('.info').html("<div id='close'>&times;</div><span style='font-size: 1rem;'>"+name + "</span>" + bdate + bpname + bpadd1 + bpadd2 + bcity + bstate + bcountry + mto + mdate + mdname + mcity + mstate + link+"<hr />"+ ddate + dpname +dpadd1 + dpadd2 + dcity + dstate + dcountry + buried + buried_link + buried_grave + notes);
-								} else {
-									$('#graph').append("<div class='info'><div id='close'>&times;</div><span style='font-size: 1rem;'>" + name + "</span>" + bdate + bpname + bpadd1 + bpadd2 + bcity + bstate + bcountry + mto + mdate + mdname + mcity + mstate + link+"<hr />"+ ddate + dpname +dpadd1 + dpadd2 + dcity + dstate + dcountry + buried + buried_link + buried_grave + notes + "</div>");
-								}
+									let fostyle = $(this).children('div').attr('class');
+									if (fostyle == "man") {
+										var bgcolor = "hsl(0, 0%, 63%)";
+									} else {
+										var bgcolor = "hsl(120, 73%, 55%)"
+									}
+									console.log(bgcolor)
+									if ($('.info').is(":visible")){
+										$('.info').html("<div id='close'>&times;</div><span style='font-size: 1rem;'>"+name + "</span>" + bdate + bpname + bpadd1 + bpadd2 + bcity + bstate + bcountry + mto + mdate + mdname + mcity + mstate + link+"<hr />"+ ddate + dpname +dpadd1 + dpadd2 + dcity + dstate + dcountry + buried + buried_link + buried_grave + notes).css({'background-color':bgcolor});
+									} else {
+										$('#graph').append("<div class='info' style='background-color:"+bgcolor+"'><div id='close'>&times;</div><span style='font-size: 1rem;'>" + name + "</span>" + bdate + bpname + bpadd1 + bpadd2 + bcity + bstate + bcountry + mto + mdate + mdname + mcity + mstate + link+"<hr />"+ ddate + dpname +dpadd1 + dpadd2 + dcity + dstate + dcountry + buried + buried_link + buried_grave + notes + "</div>");
+									}
 				                });
 								
 							},
@@ -103,7 +110,7 @@
 						}
 						return css;
 					  }
-					  
+
 					function setupDynamicSpouseColors() {
 						var style = document.createElement('style');
 						style.type = 'text/css';
