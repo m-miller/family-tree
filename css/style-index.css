@@ -13,6 +13,9 @@ h1 {
 #graph:active {
 	cursor: grabbing;
 }
+.nodeText {
+	text-align: center;
+}
 .linage {
 	fill: none;
 	stroke: #000;
@@ -33,18 +36,14 @@ h1 {
 }
 .man {
 	background-color: hsl(0, 0%, 83%);
-	border-style: solid;
-	border-width: 1px;
-	box-sizing: border-box;
+	border: 1px solid black;
 }
 .man:hover {
 	background-color: hsl(0, 0%, 63%);
 }
 .woman {
 	background-color: hsl(120, 73%, 75%);
-	border-style: solid;
-	border-width: 1px;
-	box-sizing: border-box;
+	border: 1px solid black;
 }
 .woman:hover {
 	background-color: hsl(120, 73%, 55%);
@@ -65,6 +64,8 @@ foreignObject > div {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	box-sizing: border-box;
+
 }
 div > p {
 	font-size: .75rem;
