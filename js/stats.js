@@ -1,283 +1,273 @@
-var request = new XMLHttpRequest();
-request.open("GET", "data.json", false);
-request.send(null);
-const jsonarray = JSON.parse(request.responseText);
+// Stats page: loads the tree data, fills the tables and draws the charts.
+(function () {
+	'use strict';
 
-// compare birthdate and deathdate, get ages
+	const DATA_FILE = 'data.json';
+	const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-var bdays = iterateObject(jsonarray, 'birthdate');
+	// ---------- dates ----------
 
-var ddays = iterateObject(jsonarray, 'deathdate');
-
-function calcDate(date1, date2){
-    const dt_date1 = new Date(date1);
-    const dt_date2 = new Date(date2);
-
-    //Get the Timestamp
-    const date1_time_stamp = dt_date1.getTime();
-    const date2_time_stamp = dt_date2.getTime();
-
-    let calc;
-
-    //Check which timestamp is greater
-    if (date1_time_stamp > date2_time_stamp) {
-        calc = new Date(date1_time_stamp - date2_time_stamp);
-    } else {
-        calc = new Date(date2_time_stamp - date1_time_stamp);
-    }
-    //Retrieve the date, month and year
-    const calcFormatTmp = calc.getDate() + '-' + (calc.getMonth() + 1) + '-' + calc.getFullYear();
-    const calcFormat = calcFormatTmp.split("-");
-    const years_passed = Number(Math.abs(calcFormat[2]) - 1970);
-
-	var ages = [];
-	ages.push(years_passed);
-	return ages;
-}
-
-var ages =[];
-const countpersons = bdays.length;
-for ( p = 0; p < countpersons; p++ ) {
-	age = calcDate(bdays[p], ddays[p]);
-	if (!isNaN(age) ){
-		ages[p] = age;
+	// Month name ('Mar' or 'March') -> 0-11, or null
+	function monthIndex(word) {
+		const i = MONTHS.map(function (m) { return m.toLowerCase(); }).indexOf(word.slice(0, 3).toLowerCase());
+		return i === -1 ? null : i;
 	}
-}
 
-function iterateObject(obj, property, output=[]) {
-  if (!output) {
-    output = [];
-  }
-   for(prop in obj) {
-  	if(typeof(obj[prop]) == "object"){
-    	iterateObject(obj[prop], arguments[1], output);
-    } else {
-    	if (prop == arguments[1]) {
-        output.push(obj[arguments[1]]);
-      }
-    }
-  }
-  return output;
-}
-
-var named = iterateObject(jsonarray, 'name');
-//console.log(named);
-
-const marriedmonths = iterateObject(jsonarray, 'married_date');
-//console.log(marriedmonths);
-
-var names = [];
-// get first names into array
-for ( s=0; s < named.length; s++ ) {
-	var words = named[s].split(' ');
-		names[s] = words[0];
-} 
- 
-  function converttoArray ( obj ) {
-	   var result = [];
-	   for(var i in obj){
-		   result.push([i, obj[i]]);
-	   }
-  return result;
-}
-
-const count = res =>
-  res.reduce((result, value) => ({ ...result,
-    [value]: (result[value] || 0) + 1
-  }), {});
-
-const namesarray = converttoArray(count(names));
-
-  function sortFunction(a, b) {
-      if (a[1] === b[1]) {
-          return 0;
-      }
-      else {
-          return (a[1] < b[1]) ? 1 : -1;
-      }
-  }
-
-
-var months=[];
-// get three-letter months into array
-function retmonths(obj) {
-for ( s=0; s < obj.length; s++ ) {
-	var words = obj[s].split(' ');
-	var lengths = words.map(function(word){
-	 return word.length
-	})
-	if (lengths[1] == 3 ) {
-		months[s] = words[1];
+	// Parse 'D Mon YYYY', 'Mon YYYY' or 'YYYY' without relying on the browser's Date parser.
+	// Returns {day, month, year} (missing parts are null), or null if unparseable.
+	function parseDate(str) {
+		if (typeof str !== 'string') return null;
+		const s = str.trim().replace(/\s+/g, ' ');
+		let m;
+		if ((m = s.match(/^(\d{1,2}) ([A-Za-z]+) (\d{4})$/))) {
+			const month = monthIndex(m[2]);
+			const day = parseInt(m[1], 10);
+			if (month === null || day < 1 || day > 31) return null;
+			return { day: day, month: month, year: parseInt(m[3], 10) };
+		}
+		if ((m = s.match(/^([A-Za-z]+) (\d{4})$/))) {
+			const month = monthIndex(m[1]);
+			if (month === null) return null;
+			return { day: null, month: month, year: parseInt(m[2], 10) };
+		}
+		if ((m = s.match(/^(\d{4})$/))) {
+			return { day: null, month: null, year: parseInt(m[1], 10) };
+		}
+		return null;
 	}
-}
-return months;
-}
- 
-  const married = converttoArray(count(retmonths(marriedmonths))).sort(sortFunction);
 
-  const sortedages = converttoArray(count(ages)).sort(sortFunction);
+	function isFullDate(d) {
+		return d !== null && d.day !== null && d.month !== null;
+	}
 
-  const sortedbdays = converttoArray(count(retmonths(bdays))).sort(sortFunction);
- 
-  const sortedddays = converttoArray(count(retmonths(ddays))).sort(sortFunction);
-  
-  const sortednames = namesarray.sort(sortFunction);
+	// Whole years between two full dates
+	function calcAge(birth, death) {
+		let years = death.year - birth.year;
+		if (death.month < birth.month || (death.month === birth.month && death.day < birth.day)) {
+			years--;
+		}
+		return years;
+	}
 
-  function addRow(names, freq, div ) {
-    var tableBody = document.getElementById(div);
-    var newRow = tableBody.insertRow(tableBody.rows.length);
-    var nameCell = newRow.insertCell(0);
-    var freqCell = newRow.insertCell(1);
-    var nameText = document.createTextNode(names);
-    var freqText = document.createTextNode(freq);
-    nameCell.appendChild(nameText);
-    freqCell.appendChild(freqText);
-  }
-  
+	// ---------- data helpers ----------
 
-var total = 0;
-for(var i = 0; i < sortedages.length; i++) {
-    total += parseInt(sortedages[i][0]);
-}
-var avg = Math.round(total / sortedages.length);
- 
-  
-  $(document).ready(function() {
-		sortedbdays.forEach(function(listItem){
-			addRow(listItem[0], listItem[1], 'bdaysbody');
+	// Every value of `property` anywhere in the tree, in document order
+	function collectValues(obj, property, output) {
+		output = output || [];
+		for (const key in obj) {
+			if (obj[key] !== null && typeof obj[key] === 'object') {
+				collectValues(obj[key], property, output);
+			} else if (key === property) {
+				output.push(obj[key]);
+			}
+		}
+		return output;
+	}
+
+	// [value, value, ...] -> [[value, count], ...] sorted by count, highest first
+	function countSorted(values) {
+		const counts = {};
+		values.forEach(function (v) {
+			counts[v] = (counts[v] || 0) + 1;
 		});
-		
-		sortedddays.forEach(function(listItem){
-			addRow(listItem[0], listItem[1], 'ddaysbody');
+		return Object.keys(counts)
+			.map(function (k) { return [k, counts[k]]; })
+			.sort(function (a, b) { return b[1] - a[1]; });
+	}
+
+	// Month names from a list of dates. Dates with no month go into `unknown`.
+	// Blank dates count as unknown only when blankIsUnknown is true.
+	function monthsOf(dates, blankIsUnknown) {
+		const months = [];
+		let unknown = 0;
+		dates.forEach(function (str) {
+			if (typeof str !== 'string' || str.trim() === '') {
+				if (blankIsUnknown) unknown++;
+				return;
+			}
+			const d = parseDate(str);
+			if (d !== null && d.month !== null) {
+				months.push(MONTHS[d.month]);
+			} else {
+				unknown++;
+			}
 		});
+		return { months: months, unknown: unknown };
+	}
 
-		sortednames.forEach(function(listItem){
-			addRow(listItem[0], listItem[1], 'namesbody');
+	// Ages at death. A blank death date is skipped (may be living / not recorded);
+	// anything else without two full dates goes into the unknown/approximate count.
+	// birthdates[i] and deathdates[i] belong to the same person.
+	function agesOf(birthdates, deathdates) {
+		const ages = [];
+		let unknown = 0;
+		for (let i = 0; i < birthdates.length; i++) {
+			if (deathdates[i] === '') continue;
+			const b = parseDate(birthdates[i]);
+			const d = parseDate(deathdates[i]);
+			if (isFullDate(b) && isFullDate(d)) {
+				ages.push(calcAge(b, d));
+			} else {
+				unknown++;
+			}
+		}
+		return { ages: ages, unknown: unknown };
+	}
+
+	// ---------- tables ----------
+
+	// Summary rows (unknown, average) stay at the bottom when the table is sorted
+	function addRow(label, value, tbodyId, isSummary) {
+		const row = document.getElementById(tbodyId).insertRow(-1);
+		row.insertCell(0).textContent = label;
+		row.insertCell(1).textContent = value;
+		if (isSummary) row.dataset.summary = 'true';
+	}
+
+	function makeSortable(table) {
+		const headers = table.tHead.rows[0].cells;
+		Array.prototype.forEach.call(headers, function (cell, col) {
+			cell.classList.add('sortable');
+			cell.addEventListener('click', function () {
+				const ascending = cell.getAttribute('aria-sort') !== 'ascending';
+				Array.prototype.forEach.call(headers, function (h) { h.removeAttribute('aria-sort'); });
+				cell.setAttribute('aria-sort', ascending ? 'ascending' : 'descending');
+
+				const body = table.tBodies[0];
+				const rows = Array.from(body.rows);
+				const dataRows = rows.filter(function (r) { return !r.dataset.summary; });
+				const summaryRows = rows.filter(function (r) { return r.dataset.summary; });
+
+				dataRows.sort(function (a, b) {
+					const x = a.cells[col].textContent;
+					const y = b.cells[col].textContent;
+					const nx = Number(x);
+					const ny = Number(y);
+					const result = (!isNaN(nx) && !isNaN(ny)) ? nx - ny : x.localeCompare(y);
+					return ascending ? result : -result;
+				});
+				dataRows.concat(summaryRows).forEach(function (r) { body.appendChild(r); });
+			});
 		});
-		
-		sortedages.forEach(function(listItem){
-			addRow(listItem[0], listItem[1], 'agesbody');
+	}
+
+	// ---------- charts ----------
+
+	// pairs: [[label, count], ...] sorted by count, highest first
+	function barchart(pairs, selector, color) {
+		const margin = { top: 30, right: 30, bottom: 70, left: 20 };
+		const width = 500;
+		const height = 400 - margin.top - margin.bottom;
+
+		const svg = d3.select(selector)
+			.append('svg')
+			.attr('width', width + margin.left + margin.right)
+			.attr('height', height + margin.top + margin.bottom)
+			.append('g')
+			.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+		const x = d3.scaleBand()
+			.range([0, width])
+			.domain(pairs.map(function (d) { return d[0]; }))
+			.padding(0.2);
+		svg.append('g')
+			.attr('transform', 'translate(0,' + height + ')')
+			.call(d3.axisBottom(x))
+			.selectAll('text')
+			.attr('transform', 'translate(-10,0)rotate(-45)')
+			.style('text-anchor', 'end');
+
+		const y = d3.scaleLinear()
+			.domain([0, d3.max(pairs, function (d) { return d[1]; }) || 0])
+			.range([height, 0]);
+		svg.append('g')
+			.call(d3.axisLeft(y));
+
+		const tooltip = d3.select(selector).append('div')
+			.attr('class', 'tooltip')
+			.style('opacity', 0);
+
+		svg.selectAll('rect.bar')
+			.data(pairs)
+			.enter()
+			.append('rect')
+			.attr('class', 'bar')
+			.attr('x', function (d) { return x(d[0]); })
+			.attr('width', x.bandwidth())
+			.attr('fill', color)
+			// start with no height, then animate up
+			.attr('y', y(0))
+			.attr('height', 0)
+			.on('mouseover', function (d) {
+				tooltip.transition().duration(200).style('opacity', 0.8);
+				tooltip.text(d[0] + ', ' + d[1])
+					.style('left', (d3.event.layerX - 10) + 'px')
+					.style('top', (d3.event.layerY - 40) + 'px');
+			})
+			.on('mouseout', function () {
+				tooltip.transition().duration(500).style('opacity', 0);
+			})
+			.transition()
+			.duration(800)
+			.delay(function (d, i) { return i * 100; })
+			.attr('y', function (d) { return y(d[1]); })
+			.attr('height', function (d) { return height - y(d[1]); });
+	}
+
+	// ---------- page ----------
+
+	function render(tree) {
+		const birthdates = collectValues(tree, 'birthdate');
+		const deathdates = collectValues(tree, 'deathdate');
+		const marriedDates = collectValues(tree, 'married_date');
+		const firstNames = collectValues(tree, 'name').map(function (n) { return n.split(' ')[0]; });
+
+		// births: blank = unknown; deaths: blank = skipped (may be living); marriages: blank = skipped
+		const births = monthsOf(birthdates, true);
+		const deaths = monthsOf(deathdates, false);
+		const marriages = monthsOf(marriedDates, false);
+		const ages = agesOf(birthdates, deathdates);
+
+		const sortedBirths = countSorted(births.months);
+		const sortedDeaths = countSorted(deaths.months);
+		const sortedNames = countSorted(firstNames);
+		const sortedAges = countSorted(ages.ages);
+		const sortedMarriages = countSorted(marriages.months);
+
+		// average over every person with a known age (not over distinct ages)
+		const total = ages.ages.reduce(function (sum, a) { return sum + a; }, 0);
+		const avg = ages.ages.length ? Math.round(total / ages.ages.length) : '';
+
+		sortedBirths.forEach(function (p) { addRow(p[0], p[1], 'bdaysbody'); });
+		addRow('Unknown/approximate', births.unknown, 'bdaysbody', true);
+
+		sortedDeaths.forEach(function (p) { addRow(p[0], p[1], 'ddaysbody'); });
+		addRow('Unknown/approximate', deaths.unknown, 'ddaysbody', true);
+
+		sortedNames.forEach(function (p) { addRow(p[0], p[1], 'namesbody'); });
+
+		sortedAges.forEach(function (p) { addRow(p[0], p[1], 'agesbody'); });
+		addRow('Unknown/approximate', ages.unknown, 'agesbody', true);
+		addRow('Average', avg, 'agesbody', true);
+
+		document.querySelector('#married p').append(' (' + marriages.unknown + ' unknown/approximate not shown)');
+
+		barchart(sortedNames.slice(0, 20), '#namesgraph', '#045FB4');
+		barchart(sortedAges.slice(0, 20), '#agesgraph', '#0B2161');
+		barchart(sortedMarriages.slice(0, 12), '#married', '#29088A');
+
+		['birthdays', 'deaths', 'nameslist', 'age'].forEach(function (id) {
+			makeSortable(document.getElementById(id));
 		});
-		addRow('Average', avg, 'agesbody');
-		
-  
-function makeCSV(file, len, header) {
-  var csvContent = [];
-  if (header.length > 0 ){
-    csvContent = header;
-  } 
-file.slice(0,len).forEach(function(rowArray) {
-    let row = rowArray[0] + ","+rowArray[1];
-    csvContent += row + "\r\n";
-});
-return csvContent;
-}
+	}
 
-namescsv = makeCSV( sortednames, 20, ['name', 'count'+'\r\n'] );
-
-agescsv = makeCSV( sortedages, 20, ['age','count' + '\r\n']);
-
-marriedcsv = makeCSV( married, 12, ['month', 'count' + '\r\n']);
-
-//  graphs function 
-
-function barchart(csvdata, divid, var1, var2, color) {
- // set the dimensions and margins of the graph
-var margin = {top: 30, right: 30, bottom: 70, left: 20},
-    width = 500,
-    height = 400 - margin.top - margin.bottom;
-
-data = d3.csvParse(csvdata);
-//console.log(data);
-// append the svg object to the body of the page
-var svg = d3.select(divid)
-  .append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-  .attr("transform",
-        "translate(" + margin.left + "," + margin.top + ")");
-
-  // X axis
-  var ex = arguments[2];
-  var why = arguments[3];
-
-  var x = d3.scaleBand()
-    .range([ 0, width ])
-    .domain(data.map(function(d) { return d[ex]; }))
-    .padding(0.2);
-  svg.append("g")
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(x))
-    .selectAll("text")
-    .attr("transform", "translate(-10,0)rotate(-45)")
-    .style("text-anchor", "end");
-	  
-  // Add Y axis
-  var y = d3.scaleLinear()
-	  .domain([0, data[0][why]])
-    .range([ height, 0]);
-  svg.append("g")
-    .call(d3.axisLeft(y));
-
-    const tooltip = d3.select(divid).append('div')
-    .attr('class', 'tooltip')
-    .style('opacity', 0);
-
-    //var headerNames = d3.keys(data[0]);
-
-  // Bars
-  svg.selectAll("mybar")
-    .data(data)
-    .enter()
-    .append("rect")
-    .attr('class', 'bar')
-    .attr("x", function(d) { return x(d[ex]); })
-    .attr("y", function(d) { return y(d[why]); })
-    .attr("width", x.bandwidth())
-    .attr("height", function(d) { return height - y(d[why]); })
-    .attr("fill", color)
-    // no bar at the beginning thus:
-    .attr("height", function(d) { return height - y(0); }) // always equal to 0
-    .attr("y", function(d) { return y(0); })
-    .on("mouseover", function(d) {
-      tooltip.transition()
-      .duration(200)
-      .style("opacity", .8);
-
-      tooltip.html( d[ex] + ", " + d[why])
-      .attr('class', 'tooltip')
-      .style('left', `${d3.event.layerX - 10}px`)
-      .style('top', `${(d3.event.layerY - 40)}px`);
-      })
-
-      .on("mouseout", function(d) {
-      tooltip.transition()
-      .duration(500)
-      .style("opacity", 0);
-      });
-      
-    // Animation
-svg.selectAll("rect")
-.transition()
-.duration(800)
-.attr("y", function(d) { return y(d[why]); })
-.attr("height", function(d) { return height - y(d[why]); })
-.delay(function(d,i){ return(i*100)})
-
-
-}
-
-barchart(namescsv, '#namesgraph', 'name', 'count', '#045FB4');
-
-barchart(agescsv, '#agesgraph', 'age', 'count', '#0B2161');
-
-barchart(marriedcsv, '#married', 'month', 'count', '#29088A');
-
-
-	}) // document.ready
-
-	
-	$(function() {
-	  $("#birthdays, #deaths, #nameslist, #age").tablesorter(({"theme": "default"}));
-	});
+	fetch(DATA_FILE)
+		.then(function (response) {
+			if (!response.ok) throw new Error(response.status + ' ' + response.statusText);
+			return response.json();
+		})
+		.then(render)
+		.catch(function (err) {
+			console.error('Could not load ' + DATA_FILE, err);
+		});
+})();

@@ -1,119 +1,126 @@
-      treeJson = d3.json(thefile, function(error, treeData) {
-      	dTree.init(treeData,
+// Family tree page. The page sets `thefile` (the JSON data file) before loading this script.
+(function () {
+	'use strict';
 
-					{
-						target: '#graph',
-						debug: true,
-						hideMarriageNodes: true,
-						marriageNodeSize: 3,
-						height: 800,
-						width: 1200,
-						callbacks: {
-							nodeClick: function(name, extra, id) {
-								bdate = bpname = bpadd1 = bpadd2 = bcity = bstate = bcountry = '';
-								ddate = dpname = dpadd1 = dpadd2 = dcity = dstate = dcountry = '';
-								link = buried = buried_link = buried_grave = '';
-								mto = mdate = mdname = mcity = mstate = notes = '';
-								if ( extra ) {
-									if ( extra.birthdate !== '') bdate = '<br /><span>Born: ' + extra.birthdate + '</span>';
-									if ( extra.birthplace_name !== '' ) bpname = '<br />At: ' + extra.birthplace_name;
-									if ( extra.birth_address1 !== '' ) bpadd1 = '<br />' + extra.birth_address1;
-									if ( extra.birth_address2 !== '' ) bpadd2 = '<br />' + extra.birth_address2;
-									if ( extra.birth_city !== '' ) bcity = '<br />' + extra.birth_city;
-									if ( extra.birth_state_province !== '' ) bstate = ', ' + extra.birth_state_province;
-									if ( extra.birth_country !== '' ) bcountry = '<br />' + extra.birth_country;
-									// add marriage date, place
-									// add burial place
-									if ( extra.married_to !== '' ) mto = '<hr />Married to: ' + extra.married_to;
-									if ( extra.married_to == null ) mto = '';
-									if ( extra.married_date !== '' ) mdate = '<br />on: ' + extra.married_date;
-									if ( extra.married_date == null ) mdate = '';
-									if ( extra.married_place !== '' ) mdname = '<br />at: ' + extra.married_place;
-									if ( extra.married_place == null ) mdname = '';
-									if ( extra.married_city !== '' ) mcity = '<br />' + extra.married_city;
-									if ( extra.married_city == null ) mcity = '';
-									if ( extra.married_state !== '' ) mstate = ', ' + extra.married_state;
-									if ( extra.married_state == null ) mstate = '';
-									
-									if ( extra.link !== '' || extra.link.length > 0 ) { 
-										link = '<br /><a href='+extra.link+'.html>'+extra.link+' Family Tree</a>';
-									}
-									if ( extra.link == null ) link = '';
-									
-									if ( extra.deathdate !== '') ddate = '<span>Died: ' + extra.deathdate + '</span>';
-									if ( extra.deathplace_name !== '' ) dpname = '<br />At: ' + extra.deathplace_name;
-									if ( extra.death_address1 !== '' ) dpadd1 = '<br />' + extra.death_address1;
-									if ( extra.death_address2 !== '' ) dpadd2 = '<br />' + extra.death_address2;
-									if ( extra.death_city !== '' ) dcity = '<br />' + extra.death_city;
-									if ( extra.death_state_province !== '' ) dstate = ', ' + extra.death_state_province;
-									if ( extra.death_country !== '' ) dcountry = '<br />' + extra.death_country;
-									
-									if ( extra.buried !== '' ) buried = '<br />Buried: ' + extra.buried;
-									if ( extra.buried == null ) buried = '';
-									if ( extra.buried_link !== '' ) buried_link = '<br /><a href='+extra.buried_link+' target=\'_blank\'>Cemetery Map</a>';
-									if ( extra.buried_link == null ) buried_link = '';
-									if ( extra.buried_grave !== '' ) buried_grave = '<br /><a href='+extra.buried_grave+' target=\'_blank\'>Find a Grave</a>';
-									if ( extra.buried_grave == null ) buried_grave = '';
-									
-									if ( extra.notes !== '' ) notes = '<hr />Notes: ' + extra.notes;
-									if ( extra.notes == null ) notes = '';
-								}
-								
-				                $('body').on('click', 'foreignObject', function(){
-									let foClass = $(this).children('div').attr('class');
-									let bgcolor;
-									foClass == 'man' ? bgcolor = 'hsl(0, 0%, 63%)' : bgcolor = 'hsl(120, 73%, 55%)';
-									if ($('.info').is(':visible')){
-										$('.info').html('<div id=\'close\'>&times;</div><span style=\'font-size: 1rem;\'>'+name + '</span>' + bdate + bpname + bpadd1 + bpadd2 + bcity + bstate + bcountry + mto + mdate + mdname + mcity + mstate + link+'<hr />'+ ddate + dpname +dpadd1 + dpadd2 + dcity + dstate + dcountry + buried + buried_link + buried_grave + notes).css({'background-color':bgcolor});
-									} else {
-										$('#graph').append('<div class=\'info\' style=\'background-color:'+bgcolor+'\'><div id=\'close\'>&times;</div><span style=\'font-size: 1rem;\'>' + name + '</span>' + bdate + bpname + bpadd1 + bpadd2 + bcity + bstate + bcountry + mto + mdate + mdname + mcity + mstate + link+'<hr />'+ ddate + dpname +dpadd1 + dpadd2 + dcity + dstate + dcountry + buried + buried_link + buried_grave + notes + '</div>');
-									}
-				                });
-								
-							},
-							//nodeRightClick: function(name, extra) {
-							//	alert('Right-click: ' + name);
-							//},
-							textRenderer: function(name, extra, textClass) {
-								bdate = '';
-								ddate = '';
-								if ( extra ) {
-								if ( extra.birthdate !== '') bdate = '<br /><span class=\'halfrem\'>Born: ' + extra.birthdate + '</span>';
-								
-								if ( extra.deathdate !== '') ddate = '<br /><span class=\'halfrem\'>Died: ' + extra.deathdate + '</span>';
-									name = name + bdate + ddate;
-								return '<p class=\'' + textClass + '\'>' + name + '</p>';
-								}
-							},
-							/*
-							marriageClick: function(extra, id) {
-								alert('Clicked marriage node' + extra.birthplace_name);
-							},
-							marriageRightClick: function(extra, id) {
-								alert('Right-clicked marriage node' + id);
-							},
-							*/
-						}
-					});
+	// ---------- helpers ----------
 
-					function generateSpouseColorCSS() {
-						var css = '';
-						for (var i = 1; i < 10; i++) {
-						  var borderOpacity = 0.3 + (i * 0.1); 
-						  css += '.spouse-' + i + ' {\n';
-						  css += '  border-left: 5px solid rgba(0, 0, 0, ' + borderOpacity + ');\n';
-						  css += '}\n';
-						}
-						return css;
-					  }
+	function escapeHtml(value) {
+		return String(value).replace(/[&<>"']/g, function (c) {
+			return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+		});
+	}
 
-					function setupDynamicSpouseColors() {
-						var style = document.createElement('style');
-						style.type = 'text/css';
-						style.innerHTML = generateSpouseColorCSS();
-						document.head.appendChild(style);
-					  }
-					  
-					  setupDynamicSpouseColors();
-					  
-    	});
+	function has(value) {
+		return typeof value === 'string' && value !== '';
+	}
+
+	// prefix + escaped value + suffix, or '' when the value is empty/missing
+	function part(value, prefix, suffix) {
+		return has(value) ? prefix + escapeHtml(value) + (suffix || '') : '';
+	}
+
+	// only allow http(s) links from the data
+	function externalLink(url, label) {
+		if (!has(url) || !/^https?:\/\//i.test(url)) return '';
+		return '<br /><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + label + '</a>';
+	}
+
+	// ---------- info panel ----------
+
+	function buildInfoHtml(name, extra) {
+		var e = extra || {};
+		return '<div id="close">&times;</div>' +
+			'<span style="font-size: 1rem;">' + escapeHtml(name) + '</span>' +
+			// birth
+			part(e.birthdate, '<br /><span>Born: ', '</span>') +
+			part(e.birthplace_name, '<br />At: ') +
+			part(e.birth_address1, '<br />') +
+			part(e.birth_address2, '<br />') +
+			part(e.birth_city, '<br />') +
+			part(e.birth_state_province, ', ') +
+			part(e.birth_country, '<br />') +
+			// marriage
+			part(e.married_to, '<hr />Married to: ') +
+			part(e.married_date, '<br />on: ') +
+			part(e.married_place, '<br />at: ') +
+			part(e.married_city, '<br />') +
+			part(e.married_state, ', ') +
+			(has(e.link) ? '<br /><a href="' + escapeHtml(e.link) + '.html">' + escapeHtml(e.link) + ' Family Tree</a>' : '') +
+			'<hr />' +
+			// death
+			part(e.deathdate, '<span>Died: ', '</span>') +
+			part(e.deathplace_name, '<br />At: ') +
+			part(e.death_address1, '<br />') +
+			part(e.death_address2, '<br />') +
+			part(e.death_city, '<br />') +
+			part(e.death_state_province, ', ') +
+			part(e.death_country, '<br />') +
+			// burial
+			part(e.buried, '<br />Buried: ') +
+			externalLink(e.buried_link, 'Cemetery Map') +
+			externalLink(e.buried_grave, 'Find a Grave') +
+			part(e.notes, '<hr />Notes: ');
+	}
+
+	// `nodeEl` is the clicked foreignObject; its child div carries the man/woman class
+	function showInfo(nodeEl, name, extra) {
+		var nodeDiv = nodeEl.querySelector('div');
+		var colourClass = nodeDiv && nodeDiv.classList.contains('man') ? 'info-man' : 'info-woman';
+
+		var info = document.querySelector('.info');
+		if (!info) {
+			info = document.createElement('div');
+			document.getElementById('graph').appendChild(info);
+		}
+		info.className = 'info ' + colourClass;
+		info.innerHTML = buildInfoHtml(name, extra);
+	}
+
+	// ---------- node text ----------
+
+	function renderNodeText(name, extra, textClass) {
+		var text = escapeHtml(name);
+		if (extra) {
+			text += part(extra.birthdate, '<br /><span class="halfrem">Born: ', '</span>');
+			text += part(extra.deathdate, '<br /><span class="halfrem">Died: ', '</span>');
+		}
+		return '<p class="' + escapeHtml(textClass) + '">' + text + '</p>';
+	}
+
+	// ---------- spouse border styles (.spouse-1 ... .spouse-9) ----------
+
+	function addSpouseStyles() {
+		var css = '';
+		for (var i = 1; i < 10; i++) {
+			var borderOpacity = 0.3 + (i * 0.1);
+			css += '.spouse-' + i + ' {\n  border-left: 5px solid rgba(0, 0, 0, ' + borderOpacity + ');\n}\n';
+		}
+		var style = document.createElement('style');
+		style.textContent = css;
+		document.head.appendChild(style);
+	}
+
+	// ---------- init ----------
+
+	d3.json(thefile, function (error, treeData) {
+		if (error) {
+			console.error('Could not load ' + thefile, error);
+			return;
+		}
+		dTree.init(treeData, {
+			target: '#graph',
+			debug: false,
+			hideMarriageNodes: true,
+			marriageNodeSize: 3,
+			height: 800,
+			width: 1200,
+			callbacks: {
+				nodeClick: function (name, extra) {
+					showInfo(this, name, extra);
+				},
+				textRenderer: renderNodeText
+			}
+		});
+		addSpouseStyles();
+	});
+})();

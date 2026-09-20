@@ -1,1 +1,4 @@
 **/.DS_Store
+
+# admin config holds the database password
+admin/config.php

@@ -114,3 +114,10 @@ div > p {
 	line-height: .6;
 	text-align: center;
 }
+/* info panel colours (match the node hover colours) */
+.info-man {
+	background-color: hsl(0, 0%, 63%);
+}
+.info-woman {
+	background-color: hsl(120, 73%, 55%);
+}

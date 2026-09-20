@@ -1,4 +1,4 @@
-	body {
+body {
 		font: 1rem sans-serif;
 		background-color: white;
 	}
@@ -66,3 +66,22 @@
   fill: green;
 	}
 	
+/* sortable table headers (replaces the jQuery tablesorter theme) */
+thead td.sortable {
+	font-weight: 700;
+	border-bottom: 2px solid #ccc;
+	cursor: pointer;
+	user-select: none;
+}
+thead td.sortable::after {
+	content: ' \2195';
+	color: #999;
+}
+thead td[aria-sort="ascending"]::after {
+	content: ' \25B2';
+	color: #000;
+}
+thead td[aria-sort="descending"]::after {
+	content: ' \25BC';
+	color: #000;
+}
