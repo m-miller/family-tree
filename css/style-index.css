@@ -6,6 +6,7 @@ h1 {
 	color: white;
 }
 #graph {
+	position: relative;
 	cursor: grab;
 	background-color: white;
 	border-radius: 10px;
@@ -100,12 +101,11 @@ div > p {
 	height: auto;
 	position: absolute;
 	padding: 1rem;
-	top: 170px;
-	left: 30px;
+	top: 20px;
+	left: 65px;
 	border: 1px solid black;
 	border-radius: 10px;
 	font-size: .9rem;
-	background: white;
 }
 #close {
 	position: absolute;
@@ -124,11 +124,48 @@ div > p {
 }
 /* info panel colours (match the node hover colours) */
 .info-man {
-	background-color: hsl(0, 0%, 63%);
+	background-color: hsl(0, 6%, 80%);
 }
 .info-woman {
-	background-color: hsl(120, 73%, 55%);
+	background-color: hsl(120, 77%, 82%);
 }
 .info-unknown {
 	background-color: hsl(210, 45%, 65%);
+}
+
+/* zoom controls, bottom right of the tree */
+.zoom-controls {
+	position: absolute;
+	left: 20px;
+	top: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	cursor: default;
+}
+.zoom-controls button {
+	width: 34px;
+	height: 34px;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(255, 255, 255, .9);
+	border: none;
+	cursor: pointer;
+}
+.zoom-controls button:hover {
+	background: #fff;
+}
+.zoom-controls button:focus-visible {
+	outline: 2px solid #045FB4;
+	outline-offset: 1px;
+}
+.zoom-controls svg {
+	width: 26px;
+	height: 26px;
+	stroke: #222;
+	stroke-width: 1.6;
+	stroke-linecap: round;
+	fill: none;
 }

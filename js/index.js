@@ -105,6 +105,39 @@
 		document.head.appendChild(style);
 	}
 
+	// ---------- zoom controls ----------
+
+	var CONTROLS = [
+		{ label: 'Zoom in', icon: 'M8 3v10M3 8h10', action: function (tree) { tree.zoomBy(1.3); } },
+		{ label: 'Zoom out', icon: 'M3 8h10', action: function (tree) { tree.zoomBy(1 / 1.3); } },
+		{ label: 'Fit the whole tree', icon: 'M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4',
+		  action: function (tree) { tree.zoomToFit(); } },
+		{ label: 'Back to the starting view', icon: 'M8 2v12M2 8h12', circle: true,
+		  action: function (tree) { tree.resetZoom(); } }
+	];
+
+	function addZoomControls(tree) {
+		var bar = document.createElement('div');
+		bar.className = 'zoom-controls';
+
+		CONTROLS.forEach(function (control) {
+			var button = document.createElement('button');
+			button.type = 'button';
+			button.classList = "nav-icon"
+			button.title = control.label;
+			button.setAttribute('aria-label', control.label);
+			button.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
+				+ (control.circle ? '<circle cx="8" cy="8" r="5"></circle>' : '')
+				+ '<path d="' + control.icon + '"></path></svg>';
+			button.addEventListener('click', function () {
+				control.action(tree);
+			});
+			bar.appendChild(button);
+		});
+
+		document.getElementById('graph').appendChild(bar);
+	}
+
 	// ---------- init ----------
 
 	d3.json(thefile, function (error, treeData) {
@@ -112,7 +145,7 @@
 			console.error('Could not load ' + thefile, error);
 			return;
 		}
-		dTree.init(treeData, {
+		var tree = dTree.init(treeData, {
 			target: '#graph',
 			debug: false,
 			hideMarriageNodes: true,
@@ -127,5 +160,6 @@
 			}
 		});
 		addSpouseStyles();
+		addZoomControls(tree);
 	});
 })();

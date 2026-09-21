@@ -33,6 +33,11 @@ function page_header($title, $show_nav = true)
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= h($title) ?> &middot; Family Tree Admin</title>
 <link rel="stylesheet" href="admin.css">
+<?php if (!empty($GLOBALS['needs_datepicker'])): ?>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/css/datepicker.min.css">
+	<script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script>
+	<script src="date-fields.js"></script>
+<?php endif; ?>
 </head>
 <body>
 <?php if ($show_nav && $user): ?>
@@ -62,6 +67,22 @@ function field($label, $name, $value, $attrs = '')
 {
     printf('<label>%s<input type="text" name="%s" value="%s" %s></label>' . "\n",
            h($label), h($name), h($value), $attrs);
+}
+
+/**
+ * A date text box with a calendar button. The text box still accepts
+ * anything, including partial dates; the calendar only fills in full ones.
+ */
+function date_field($label, $name, $value)
+{
+    static $n = 0;
+    $id = 'date-' . (++$n);
+    printf('<label>%s<span class="date-row">'
+         . '<input type="text" id="%s" name="%s" value="%s" autocomplete="off">'
+         . '<button type="button" class="date-button" data-for="%s" title="Pick a date" '
+         . 'aria-label="Pick a date">&#128197;</button>'
+         . '</span></label>' . "\n",
+           h($label), h($id), h($name), h($value), h($id));
 }
 
 function textarea($label, $name, $value)

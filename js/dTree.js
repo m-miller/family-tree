@@ -459,6 +459,12 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           treeBuilder.svg.transition().duration(duration).call(treeBuilder.zoom.transform, d3.zoomIdentity.translate(opts.width / 2, opts.margin.top).scale(1));
         },
         zoomTo: _zoomTo,
+        // added: step the zoom in or out, keeping d3's own zoom state in sync
+        zoomBy: function zoomBy(factor) {
+          var duration = arguments.length <= 1 || arguments[1] === undefined ? 250 : arguments[1];
+
+          treeBuilder.svg.transition().duration(duration).call(treeBuilder.zoom.scaleBy, factor);
+        },
         zoomToNode: function zoomToNode(nodeId) {
           var zoom = arguments.length <= 1 || arguments[1] === undefined ? 2 : arguments[1];
           var duration = arguments.length <= 2 || arguments[2] === undefined ? 500 : arguments[2];

@@ -312,6 +312,7 @@ if ($person) {
          WHERE m.tree_id = ? ORDER BY a.name', [$person['tree_id']]);
 }
 
+$GLOBALS['needs_datepicker'] = true;
 page_header($person ? 'Edit ' . $p['name'] : 'Add a person');
 rebuild_form();
 ?>
@@ -326,7 +327,7 @@ rebuild_form();
 			<select name="sex">
 				<option value="man"<?= $p['sex'] === 'man' ? ' selected' : '' ?>>Man</option>
 				<option value="woman"<?= $p['sex'] === 'woman' ? ' selected' : '' ?>>Woman</option>
-				<option value="unknown"<?= $p['sex'] === 'unknown' ? ' selected' : '' ?>>Unknown (neutral colour)</option>
+				<option value="unknown"<?= $p['sex'] === 'unknown' ? ' selected' : '' ?>>Unknown/nonbinary</option>
 			</select>
 		</label>
 		<label>Tree
@@ -346,7 +347,7 @@ rebuild_form();
 
 	<fieldset>
 		<legend>Birth</legend>
-		<?php field('Date (3 Mar 1902, Mar 1902, 1902 or unknown)', 'birth_date_text', $p['birth_date_text']) ?>
+		<?php date_field('Date (3 Mar 1902, Mar 1902, 1902 or unknown)', 'birth_date_text', $p['birth_date_text']) ?>
 		<?php field('Place name', 'birthplace_name', $p['birthplace_name']) ?>
 		<?php field('Address 1', 'birth_address1', $p['birth_address1']) ?>
 		<?php field('Address 2', 'birth_address2', $p['birth_address2']) ?>
@@ -358,7 +359,7 @@ rebuild_form();
 
 	<fieldset>
 		<legend>Death</legend>
-		<?php field('Date', 'death_date_text', $p['death_date_text']) ?>
+		<?php date_field('Date', 'death_date_text', $p['death_date_text']) ?>
 		<?php field('Place name', 'deathplace_name', $p['deathplace_name']) ?>
 		<?php field('Address 1', 'death_address1', $p['death_address1']) ?>
 		<?php field('Address 2', 'death_address2', $p['death_address2']) ?>
@@ -376,7 +377,7 @@ rebuild_form();
 		<?php textarea('Notes', 'notes', $p['notes']) ?>
 	</fieldset>
 
-	<button type="submit"><?= $person ? 'Save changes' : 'Add this person' ?></button>
+	<button style="height: 3rem;" type="submit"><?= $person ? 'Save changes' : 'Add this person' ?></button>
 	<a class="cancel" href="index.php">Back to the list</a>
 </form>
 
@@ -417,7 +418,7 @@ rebuild_form();
 				<?php endforeach; ?>
 			</select>
 		</label>
-		<?php field('Date', 'married_date_text', $m['married_date_text']) ?>
+		<?php date_field('Date', 'married_date_text', $m['married_date_text']) ?>
 		<?php field('Place', 'married_place', $m['married_place']) ?>
 		<?php field('City', 'married_city', $m['married_city']) ?>
 		<?php field('State', 'married_state', $m['married_state']) ?>
@@ -441,7 +442,7 @@ rebuild_form();
 			</select>
 		</label>
 		<?php field('Or add them by name (creates a new person, sex unknown)', 'new_spouse_name', '') ?>
-		<?php field('Date', 'married_date_text', '') ?>
+		<?php date_field('Date', 'married_date_text', '') ?>
 		<?php field('Place', 'married_place', '') ?>
 		<?php field('City', 'married_city', '') ?>
 		<?php field('State', 'married_state', '') ?>
