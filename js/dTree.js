@@ -459,11 +459,23 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           treeBuilder.svg.transition().duration(duration).call(treeBuilder.zoom.transform, d3.zoomIdentity.translate(opts.width / 2, opts.margin.top).scale(1));
         },
         zoomTo: _zoomTo,
-        // added: step the zoom in or out, keeping d3's own zoom state in sync
+        // added: step the zoom in or out, keeping d3's own zoom state in sync.
+        // Anchored near the top of the view, where the root sits, rather than
+        // the middle of the viewport - otherwise zooming out drags the tree
+        // downwards as everything shrinks towards the centre.
         zoomBy: function zoomBy(factor) {
           var duration = arguments.length <= 1 || arguments[1] === undefined ? 250 : arguments[1];
 
-          treeBuilder.svg.transition().duration(duration).call(treeBuilder.zoom.scaleBy, factor);
+          var node = treeBuilder.svg.node();
+          var current = d3.zoomTransform(node);
+          var scale = Math.max(0.1, Math.min(10, current.k * factor));
+          var box = node.getBoundingClientRect();
+          var anchorX = (box.width || opts.width) / 2;
+          var anchorY = opts.margin.top;
+          var ratio = scale / current.k;
+          var transform = d3.zoomIdentity.translate(anchorX - (anchorX - current.x) * ratio, anchorY - (anchorY - current.y) * ratio).scale(scale);
+
+          treeBuilder.svg.transition().duration(duration).call(treeBuilder.zoom.transform, transform);
         },
         zoomToNode: function zoomToNode(nodeId) {
           var zoom = arguments.length <= 1 || arguments[1] === undefined ? 2 : arguments[1];
