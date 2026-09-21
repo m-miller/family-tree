@@ -122,23 +122,25 @@ input.date-helper {
 
 p.hint { color: #555; margin: .2rem 0 .6rem; }
 
-.datepicker.datepicker-orient-left {
-  margin-left: 4.5rem !important;
-  margin-top: -2rem !important;
-}
+/* the date picker grows out of the calendar button */
 
-/* the date picker slides in beside the calendar button */
+.datepicker-dropdown {
+	padding-top: 0!important;
+}
 .datepicker.beside-icon {
 	opacity: 0;
-	transform: translateX(-.5rem);
-	transition: opacity .15s ease-out, transform .15s ease-out;
-}
-.datepicker.beside-icon.from-right {
-	transform: translateX(.5rem);
+	transform: scale(.15);
+	/* transform-origin is set in JS, to the corner nearest the button */
+	transition: opacity .4s ease-out, transform 1s cubic-bezier(.34, 1.56, .64, 1);
 }
 .datepicker.beside-icon.is-in {
 	opacity: 1;
 	transform: none;
+}
+/* while being measured: full size, no animation, still invisible */
+.datepicker.beside-icon.measuring {
+	transform: none;
+	transition: none;
 }
 @media (prefers-reduced-motion: reduce) {
 	.datepicker.beside-icon { transition: none; }

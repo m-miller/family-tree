@@ -28,10 +28,18 @@
 	 * the offset parent isn't always the page.
 	 */
 	function placeBesideButton(button, element) {
-		var gap = remInPixels();
+		var gap = remInPixels() / 2;
 		var card = element.querySelector('.datepicker-picker') || element;
-		var box = button.getBoundingClientRect();
+		// measure to the icon itself: the button's padding would otherwise
+		// eat into the gap and leave the picker looking too close
+		var icon = button.querySelector('svg') || button;
+		var box = icon.getBoundingClientRect();
 		var width = card.offsetWidth || 260;
+
+		// Measure at full size. The opening animation has the picker scaled
+		// down, and getBoundingClientRect reports the scaled box, which would
+		// throw the placement out by the difference.
+		element.classList.add('measuring');
 
 		// the left of the button by preference, the right if there's no room
 		var onLeft = box.left - gap - width >= gap;
@@ -49,6 +57,17 @@
 			element.style.left = (parseFloat(element.style.left) + (wantedX - landed.left)) + 'px';
 			element.style.top = (parseFloat(element.style.top) + (wantedY - landed.top)) + 'px';
 		}
+
+		// Grow out of the icon: the corner nearest the button stays put while
+		// the rest of the picker scales away from it.
+		var frame = element.getBoundingClientRect();
+		if (frame.width) {
+			var originX = onLeft ? frame.width : 0;
+			var originY = Math.max(0, Math.min(frame.height, (box.top + box.height / 2) - frame.top));
+			element.style.transformOrigin = originX + 'px ' + originY + 'px';
+		}
+
+		element.classList.remove('measuring');
 	}
 
 	function attach(button) {
@@ -78,11 +97,14 @@
 
 		helper.addEventListener('show', function () {
 			placeBesideButton(button, pickerElement);
-			// next frame: the library positions on show too, so place again
-			// after it, and give the transition a starting point to move from
+			// The library positions on show as well, so place again after it.
+			// The second frame matters: the browser has to paint the picker
+			// small and faint once, or there is nothing to animate from.
 			requestAnimationFrame(function () {
 				placeBesideButton(button, pickerElement);
-				pickerElement.classList.add('is-in');
+				requestAnimationFrame(function () {
+					pickerElement.classList.add('is-in');
+				});
 			});
 		});
 
