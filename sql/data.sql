@@ -893,9 +893,6 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `password_hash`, `created_at`, `last_login_at`) VALUES
-(1, 'Martino', '$2y$12$KCpv7XmyZ21/MP3Qm3yR5O98G6ZymncsZSIOBLb3e4A92gBWdnBsG', '2026-09-20 21:59:46', '2026-09-20 20:44:48');
-
 --
 -- Indexes for dumped tables
 --
