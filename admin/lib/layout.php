@@ -41,7 +41,7 @@ function page_header($title, $show_nav = true)
 </head>
 <body>
 <?php if ($show_nav && $user): ?>
-<nav>
+<nav class="topbar">
 	<a href="index.php">People</a>
 	<a href="person.php?new=1">Add a person</a>
 	<a href="../index.html">View the tree</a>
