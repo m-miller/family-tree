@@ -52,6 +52,8 @@ button {
 button.danger { border-color: var(--error); color: var(--error); }
 a.cancel { margin-left: 1rem; }
 
+.person { display: flex; flex-direction: row; flex-wrap: wrap; gap: 1rem; }
+
 form.narrow { max-width: 22rem; }
 form.inline { display: inline-block; margin: 0 1rem 1rem 0; }
 fieldset { border: 1px solid var(--line); margin: 1rem 0; padding: .5rem 1rem 1rem; }
