@@ -48,6 +48,13 @@ h1 {
 .woman:hover {
 	background-color: hsl(120, 73%, 55%);
 }
+.unknown {
+	background-color: hsl(210, 45%, 85%);
+	border: 1px solid black;
+}
+.unknown:hover {
+	background-color: hsl(210, 45%, 65%);
+}
 .emphasis{
 	font-style: italic;
 }
@@ -98,6 +105,7 @@ div > p {
 	border: 1px solid black;
 	border-radius: 10px;
 	font-size: .9rem;
+	background: white;
 }
 #close {
 	position: absolute;
@@ -120,4 +128,7 @@ div > p {
 }
 .info-woman {
 	background-color: hsl(120, 73%, 55%);
+}
+.info-unknown {
+	background-color: hsl(210, 45%, 65%);
 }

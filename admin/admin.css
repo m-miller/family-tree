@@ -1,0 +1,88 @@
+/* Admin styling. Plain and functional; nothing here affects the public pages. */
+:root { --line: #ccc; --warn: #8a6d00; --error: #a10000; }
+
+body {
+	font-family: Verdana, Geneva, sans-serif;
+	font-size: .85rem;
+	margin: 0;
+	color: #222;
+	background: #f6f6f6;
+}
+nav {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: .6rem 1rem;
+	background: #333;
+	color: #fff;
+}
+nav a { color: #fff; }
+nav .spacer { flex: 1; }
+nav .who { opacity: .75; }
+main {
+	max-width: 60rem;
+	margin: 1rem auto;
+	padding: 1rem 1.5rem 3rem;
+	background: #fff;
+	border: 1px solid var(--line);
+}
+h1 { font-size: 1.3rem; }
+h2 { font-size: 1.05rem; margin-top: 2rem; }
+h3 { font-size: .95rem; }
+
+label { display: block; margin: .4rem 0; }
+label.check, label.inline-label { display: inline-block; margin-right: 1rem; }
+input[type=text], input[type=password], input[type=search], textarea, select {
+	display: block;
+	width: 100%;
+	max-width: 28rem;
+	padding: .3rem;
+	font: inherit;
+	border: 1px solid var(--line);
+	box-sizing: border-box;
+}
+label.inline-label input, label.inline-label select { display: inline-block; width: auto; }
+button {
+	padding: .4rem .9rem;
+	font: inherit;
+	cursor: pointer;
+	border: 1px solid #666;
+	background: #eee;
+}
+button.danger { border-color: var(--error); color: var(--error); }
+a.cancel { margin-left: 1rem; }
+
+form.narrow { max-width: 22rem; }
+form.inline { display: inline-block; margin: 0 1rem 1rem 0; }
+fieldset { border: 1px solid var(--line); margin: 1rem 0; padding: .5rem 1rem 1rem; }
+legend { font-weight: bold; }
+form.person fieldset { display: inline-block; vertical-align: top; width: 48%; min-width: 18rem; }
+form.marriage { border: 1px solid var(--line); padding: .5rem 1rem; margin-bottom: 1rem; }
+
+.flash { padding: .5rem .8rem; border-left: 4px solid #777; background: #f0f0f0; }
+.flash.ok { border-color: #2a7; }
+.flash.warn { border-color: var(--warn); }
+.flash.error { border-color: var(--error); }
+.warn { color: var(--warn); margin-left: .5rem; }
+
+table.people { border-collapse: collapse; width: 100%; }
+table.people td { border-bottom: 1px solid var(--line); padding: .35rem .5rem; }
+table.people thead td { font-weight: bold; border-bottom-width: 2px; }
+.tag {
+	font-size: .7rem;
+	background: #eee;
+	border: 1px solid var(--line);
+	padding: 0 .3rem;
+	margin-left: .3rem;
+}
+.count { color: #666; }
+
+/* rebuild button and its status note */
+form.rebuild { display: block; margin-bottom: 1rem; }
+form.rebuild.is-stale { padding: .5rem .8rem; border-left: 4px solid var(--warn); background: #fffbe8; }
+.ok-note { color: #2a7; margin-left: .5rem; }
+
+/* sortable column headings in the people list */
+table.people thead a.sort { text-decoration: none; color: inherit; }
+table.people thead a.sort:hover { text-decoration: underline; }
+table.people thead a.sort.active { text-decoration: none; }

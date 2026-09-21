@@ -62,10 +62,15 @@
 			part(e.notes, '<hr />Notes: ');
 	}
 
-	// `nodeEl` is the clicked foreignObject; its child div carries the man/woman class
+	// `nodeEl` is the clicked foreignObject; its child div carries the sex class
 	function showInfo(nodeEl, name, extra) {
 		var nodeDiv = nodeEl.querySelector('div');
-		var colourClass = nodeDiv && nodeDiv.classList.contains('man') ? 'info-man' : 'info-woman';
+		var colourClass = 'info-unknown';
+		if (nodeDiv && nodeDiv.classList.contains('man')) {
+			colourClass = 'info-man';
+		} else if (nodeDiv && nodeDiv.classList.contains('woman')) {
+			colourClass = 'info-woman';
+		}
 
 		var info = document.querySelector('.info');
 		if (!info) {

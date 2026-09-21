@@ -2,3 +2,4 @@
 
 # admin config holds the database password
 admin/config.php
+sql/*

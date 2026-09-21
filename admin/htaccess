@@ -1,0 +1,11 @@
+# Keep the config (database password) from ever being served as text,
+# e.g. if PHP is disabled during a host migration.
+<FilesMatch "^config(\.sample)?\.php$">
+	Require all denied
+</FilesMatch>
+
+# Block the setup page once the first account exists.
+# Uncomment after setup if you want belt and braces.
+# <Files "setup.php">
+#	Require all denied
+# </Files>
