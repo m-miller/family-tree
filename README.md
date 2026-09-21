@@ -33,12 +33,24 @@ The public site never talks to MySQL, so if the database or PHP is unavailable t
 ## Setting it up
 
 1. Create a database and user, and grant full privileges. On cPanel both names get your account prefix.
-2. Import, in this order: `sql/schema.sql`, `sql/data.sql`, `sql/users.sql`.
-3. Copy `admin/config.sample.php` to `admin/config.php` and fill in the database details. That file is gitignored because it holds a password.
-4. Set `allow_setup` to `true`, load `admin/setup.php`, create your account, then set it back to `false`. Setup refuses to run once an account exists.
-5. Sign in and press **Rebuild the tree files** to confirm the site root is writable.
+2. Import `sql/data.sql`. It creates every table and the two empty trees. (`sql/schema.sql` and
+   `sql/users.sql` are the hand-written originals, kept because their comments explain the design;
+   `data.sql` supersedes both, so don't import them as well - the tables would already exist.)
+3. Copy `admin/config.sample.php` to `admin/config.php` and fill in the database details. That file is
+   gitignored because it holds a password.
+4. Set `allow_setup` to `true`, load `admin/setup.php`, create your account, then set it back to `false`.
+   Setup refuses to run once an account exists.
+5. Sign in and add your first person, then press **Start the chart from this person** on their page.
+   A tree with no root has nothing to draw, and the rebuild will say so.
+6. Press **Rebuild the tree files**, which writes `data.json` and confirms the site root is writable.
 
 An install that is already running applies the `sql/alter-*.sql` files in filename order instead of re-importing.
+
+**The repository holds no family data and no accounts.** `sql/data.sql` is structure only: the people
+in this tree are living relatives, and the `users` table holds a password hash, so neither belongs in a
+public repo. Back up the real database by exporting it from phpMyAdmin and keeping that file private.
+`data.json` is the exception - it is generated, and public on the site anyway, so it is committed to
+let the pages work straight from a clone.
 
 ## The database
 
