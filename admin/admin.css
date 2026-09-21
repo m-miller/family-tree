@@ -36,7 +36,7 @@ input[type=text], input[type=password], input[type=search], textarea, select {
 	display: block;
 	width: 100%;
 	max-width: 28rem;
-	padding: .3rem;
+	padding: .6rem;
 	font: inherit;
 	border: 1px solid var(--line);
 	box-sizing: border-box;
@@ -123,9 +123,12 @@ input.date-helper {
 p.hint { color: #555; margin: .2rem 0 .6rem; }
 
 /* the date picker grows out of the calendar button */
-
+.datepicker-picker {
+	border: 1px solid #0fa433;
+}
 .datepicker-dropdown {
 	padding-top: 0!important;
+	margin-top: -8px !important;
 }
 .datepicker.beside-icon {
 	opacity: 0;
