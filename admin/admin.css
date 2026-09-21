@@ -20,7 +20,7 @@ nav a { color: #fff; }
 nav .spacer { flex: 1; }
 nav .who { opacity: .75; }
 main {
-	max-width: 80rem;
+	max-width: 60rem;
 	margin: 1rem auto;
 	padding: 1rem 1.5rem 3rem;
 	background: #fff;
@@ -52,18 +52,11 @@ button {
 button.danger { border-color: var(--error); color: var(--error); }
 a.cancel { margin-left: 1rem; }
 
-.person {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	gap: 1rem;
-}
-
 form.narrow { max-width: 22rem; }
 form.inline { display: inline-block; margin: 0 1rem 1rem 0; }
 fieldset { border: 1px solid var(--line); margin: 1rem 0; padding: .5rem 1rem 1rem; }
 legend { font-weight: bold; }
-form.person fieldset { width: 29%; min-width: 18rem; }
+form.person fieldset { display: inline-block; vertical-align: top; width: 48%; min-width: 18rem; }
 form.marriage { border: 1px solid var(--line); padding: .5rem 1rem; margin-bottom: 1rem; }
 
 .flash { padding: .5rem .8rem; border-left: 4px solid #777; background: #f0f0f0; }
@@ -93,22 +86,3 @@ form.rebuild.is-stale { padding: .5rem .8rem; border-left: 4px solid var(--warn)
 table.people thead a.sort { text-decoration: none; color: inherit; }
 table.people thead a.sort:hover { text-decoration: underline; }
 table.people thead a.sort.active { text-decoration: none; }
-
-/* date fields: text box plus a calendar button */
-.date-row { display: flex; gap: .3rem; max-width: 28rem; }
-.date-row input[type=text] { flex: 1; }
-button.date-button {
-	flex: 0 0 auto;
-	padding: .2rem .5rem;
-	line-height: 1;
-	font-size: 1rem;
-}
-input.date-helper {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	border: 0;
-	opacity: 0;
-	pointer-events: none;
-}

@@ -25,6 +25,8 @@ CREATE TABLE trees (
   title           VARCHAR(150) NOT NULL,           -- page heading
   json_file       VARCHAR(100) NOT NULL,           -- file the rebuild writes
   root_person_id  INT UNSIGNED NULL,               -- person the chart starts from
+  changed_at      DATETIME     NULL,               -- data last edited
+  rebuilt_at      DATETIME     NULL,               -- JSON file last written
   PRIMARY KEY (id),
   UNIQUE KEY uq_trees_slug (slug)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -33,7 +35,7 @@ CREATE TABLE people (
   id                     INT UNSIGNED NOT NULL AUTO_INCREMENT,
   tree_id                INT UNSIGNED NOT NULL,
   name                   VARCHAR(150) NOT NULL,    -- no leading asterisk; see `adopted`
-  sex                    ENUM('man','woman') NOT NULL,
+  sex                    ENUM('man','woman','unknown') NOT NULL DEFAULT 'unknown',
   adopted                TINYINT(1)   NOT NULL DEFAULT 0,
   is_placeholder         TINYINT(1)   NOT NULL DEFAULT 0,  -- e.g. "8 unnamed children"
 
@@ -80,15 +82,13 @@ CREATE TABLE people (
 
 -- One row per marriage. person_id is the spouse the chart hangs the
 -- marriage under; ordinal orders multiple marriages for that person.
--- spouse_id is NULL when the spouse isn't in the tree; spouse_name then
--- holds their name and the chart shows nothing extra. Exactly one of the
--- two should be set.
+-- Both spouses are real people; someone who was only ever recorded as a
+-- name gets a person row with sex 'unknown'.
 CREATE TABLE marriages (
   id                 INT UNSIGNED NOT NULL AUTO_INCREMENT,
   tree_id            INT UNSIGNED NOT NULL,
   person_id          INT UNSIGNED NOT NULL,
-  spouse_id          INT UNSIGNED NULL,
-  spouse_name        VARCHAR(150) NOT NULL DEFAULT '',   -- used when spouse_id IS NULL
+  spouse_id          INT UNSIGNED NOT NULL,
   ordinal            TINYINT UNSIGNED NOT NULL DEFAULT 1,
   married_date_text  VARCHAR(60)  NOT NULL DEFAULT '',
   married_year       SMALLINT     NULL,

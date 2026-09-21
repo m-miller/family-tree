@@ -113,7 +113,7 @@ class Migration:
             'linked_tree': extra.get('link', ''),
         })
         self.raw_extra[pid] = extra
-        if node.get('class') not in ('man', 'woman'):
+        if node.get('class') not in ('man', 'woman', 'unknown'):
             self.note('missing or unexpected class for %s: %r' % (name, node.get('class')))
         return pid
 
@@ -156,8 +156,7 @@ class Migration:
             my, mm, md = parse_date(values['married_date_text'])
             self.marriages.append({
                 'id': mid, 'tree_id': tree_id,
-                'person_id': pid, 'spouse_id': spouse_id, 'spouse_name': '',
-                'ordinal': ordinal,
+                'person_id': pid, 'spouse_id': spouse_id, 'ordinal': ordinal,
                 'married_date_text': values['married_date_text'],
                 'married_year': my, 'married_month': mm, 'married_day': md,
                 'married_place': values['married_place'],
@@ -183,7 +182,8 @@ class Migration:
             if mar['spouse_id']:
                 in_marriage.add(mar['spouse_id'])
 
-        for pid, extra in self.raw_extra.items():
+        # snapshot: adding spouses below inserts into raw_extra as we go
+        for pid, extra in list(self.raw_extra.items()):
             if pid in in_marriage:
                 continue
             spouse_name = (extra.get('married_to') or '').strip()
@@ -191,11 +191,16 @@ class Migration:
                 continue
             person = self.people[pid - 1]
             my, mm, md = parse_date(extra.get('married_date', ''))
+            # The spouse becomes a real person with an unknown sex, so the
+            # chart draws them and they can be edited later.
+            spouse_id = self.add_person(
+                {'name': spouse_name, 'class': 'unknown', 'extra': {}},
+                person['tree_id'])
             mid = self.next_marriage
             self.next_marriage += 1
             self.marriages.append({
                 'id': mid, 'tree_id': person['tree_id'],
-                'person_id': pid, 'spouse_id': None, 'spouse_name': spouse_name,
+                'person_id': pid, 'spouse_id': spouse_id,
                 'ordinal': 1,
                 'married_date_text': extra.get('married_date', '') or '',
                 'married_year': my, 'married_month': mm, 'married_day': md,
@@ -203,8 +208,8 @@ class Migration:
                 'married_city': extra.get('married_city', '') or '',
                 'married_state': extra.get('married_state', '') or '',
             })
-            self.note('%s is married to %r, who has no node in the tree; '
-                      'stored as a name-only marriage'
+            self.note('%s is married to %r, who had no node in the tree; '
+                      'added as a new person with an unknown sex'
                       % (person['name'], spouse_name))
 
     def run(self, repo):

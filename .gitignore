@@ -2,4 +2,7 @@
 
 # admin config holds the database password
 admin/config.php
-sql/*
+
+# python bytecode from the sql tools
+__pycache__/
+*.pyc
