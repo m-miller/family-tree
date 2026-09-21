@@ -80,6 +80,6 @@ dTree draws a tree, not a graph, so each person appears exactly once. The admin 
 
 ## Notes
 
-- `js/dTree.js` is modified from upstream: rounded connectors and `spouse-N` classes.
+- `js/dTree.js` is modified from upstream: rounded connectors and `spouse-N` classes. Adds the ability to show multiple marriages.
 - Admin errors are shown on screen to signed-in users, since shared hosting often hides them and writes no log.
 - The stats page reads `data.json` directly, so it covers the Miller tree only.
