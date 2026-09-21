@@ -69,6 +69,17 @@ function field($label, $name, $value, $attrs = '')
            h($label), h($name), h($value), $attrs);
 }
 
+/** The calendar glyph on the date buttons. Sized by CSS, not by these numbers. */
+function calendar_icon()
+{
+    return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+         . '<rect x="3" y="5" width="18" height="16" rx="2"></rect>'
+         . '<path d="M3 10h18"></path>'
+         . '<path d="M8 3v4M16 3v4"></path>'
+         . '<path d="M7 14h2M11 14h2M15 14h2M7 17.5h2M11 17.5h2"></path>'
+         . '</svg>';
+}
+
 /**
  * A date text box with a calendar button. The text box still accepts
  * anything, including partial dates; the calendar only fills in full ones.
@@ -80,7 +91,7 @@ function date_field($label, $name, $value)
     printf('<label>%s<span class="date-row">'
          . '<input type="text" id="%s" name="%s" value="%s" autocomplete="off">'
          . '<button type="button" class="date-button" data-for="%s" title="Pick a date" '
-         . 'aria-label="Pick a date">&#128197;</button>'
+         . 'aria-label="Pick a date">' . calendar_icon() . '</button>'
          . '</span></label>' . "\n",
            h($label), h($id), h($name), h($value), h($id));
 }
