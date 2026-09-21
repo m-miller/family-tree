@@ -119,3 +119,5 @@ input.date-helper {
 	opacity: 0;
 	pointer-events: none;
 }
+
+p.hint { color: #555; margin: .2rem 0 .6rem; }

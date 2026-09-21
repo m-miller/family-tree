@@ -17,6 +17,14 @@ const PERSON_FIELDS = [
     'buried', 'buried_link', 'buried_grave', 'notes', 'linked_tree',
 ];
 
+/** Create a bare person row and return its id. */
+function create_person($tree_id, $name, $sex)
+{
+    query('INSERT INTO people (tree_id, name, sex) VALUES (?, ?, ?)',
+          [(int) $tree_id, $name, $sex]);
+    return (int) db()->lastInsertId();
+}
+
 function post($key, $default = '')
 {
     return isset($_POST[$key]) ? trim((string) $_POST[$key]) : $default;
@@ -170,6 +178,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect("person.php?id=$id");
     }
 
+    if ($action === 'add_parents') {
+        $father_name = ltrim(post('father_name'), '*');
+        $mother_name = ltrim(post('mother_name'), '*');
+        $tree_id = (int) $person['tree_id'];
+
+        if ($father_name === '' && $mother_name === '') {
+            flash('Give at least one parent a name.', 'error');
+            redirect("person.php?id=$id");
+        }
+        if (fetch_one('SELECT id FROM children WHERE child_id = ?', [$id])) {
+            flash('This person already has parents recorded. Clear them first.', 'error');
+            redirect("person.php?id=$id");
+        }
+
+        // Both sides of a marriage have to exist, so an unnamed parent
+        // becomes a person with an unknown name and sex, to fill in later.
+        $father_id = create_person($tree_id, $father_name !== '' ? $father_name : 'Unknown',
+                                   $father_name !== '' ? 'man' : 'unknown');
+        $mother_id = create_person($tree_id, $mother_name !== '' ? $mother_name : 'Unknown',
+                                   $mother_name !== '' ? 'woman' : 'unknown');
+
+        $date_text = post('married_date_text');
+        [$my, $mm, $md] = parse_date_text($date_text);
+        query('INSERT INTO marriages (tree_id, person_id, spouse_id, ordinal, married_date_text,
+                                      married_year, married_month, married_day, married_place)
+               VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?)',
+              [$tree_id, $father_id, $mother_id, $date_text, $my, $mm, $md, post('married_place')]);
+        $marriage_id = (int) db()->lastInsertId();
+        query('INSERT INTO children (marriage_id, child_id, position) VALUES (?, ?, 1)',
+              [$marriage_id, $id]);
+
+        // The chart starts at one person, so a new top generation becomes the
+        // root and the marriages below it are turned to face the right way.
+        $was_drawn = drawn_people($tree_id);
+        if (isset($was_drawn[$id]) || count($was_drawn) === 0) {
+            query('UPDATE trees SET root_person_id = ? WHERE id = ?', [$father_id, $tree_id]);
+            $flipped = reorient_tree($tree_id);
+            flash(sprintf('Added %s and %s. The chart now starts from %s%s.',
+                          $father_name ?: 'an unnamed father', $mother_name ?: 'an unnamed mother',
+                          $father_name ?: 'the new father',
+                          $flipped ? sprintf(', and %d marriage%s were turned around to suit',
+                                             $flipped, $flipped === 1 ? '' : 's') : ''));
+        } else {
+            flash(sprintf('Added %s and %s as parents.',
+                          $father_name ?: 'an unnamed father', $mother_name ?: 'an unnamed mother'));
+        }
+        warn_unparsed_date('The marriage date', $date_text);
+        mark_changed($tree_id);
+        redirect("person.php?id=$father_id");
+    }
+
+    if ($action === 'make_root') {
+        $tree_id = (int) $person['tree_id'];
+        query('UPDATE trees SET root_person_id = ? WHERE id = ?', [$id, $tree_id]);
+        $flipped = reorient_tree($tree_id);
+        flash(sprintf('The chart now starts from %s%s.', $person['name'],
+                      $flipped ? sprintf(', and %d marriage%s turned around to suit',
+                                         $flipped, $flipped === 1 ? ' was' : 's were') : ''));
+        mark_changed($tree_id);
+        redirect("person.php?id=$id");
+    }
+
     if ($action === 'save_marriage') {
         $marriage_id = (int) post('marriage_id');
         $spouse_id = (int) post('spouse_id');
@@ -290,6 +360,7 @@ $blank = array_fill_keys(array_merge(PERSON_FIELDS,
 $p = $person ?: $blank + ['sex' => 'man', 'adopted' => 0, 'is_placeholder' => 0,
                           'tree_id' => (int) ($_GET['tree'] ?? ($trees[0]['id'] ?? 1))];
 
+$is_root = false;
 $marriages = [];
 $parent_marriage = null;
 $candidates = [];
@@ -300,6 +371,8 @@ if ($person) {
          JOIN people s ON s.id = m.spouse_id
          WHERE m.person_id = ? ORDER BY m.ordinal', [$id]);
     $parent_marriage = fetch_one('SELECT marriage_id FROM children WHERE child_id = ?', [$id]);
+    $is_root = (bool) fetch_one('SELECT id FROM trees WHERE root_person_id = ?', [$id]);
+    $drawn_here = isset(drawn_people((int) $person['tree_id'])[$id]);
     $candidates = fetch_all(
         'SELECT id, name, birth_date_text, death_date_text FROM people
          WHERE tree_id = ? AND id <> ? ORDER BY name', [$person['tree_id'], $id]);
@@ -400,6 +473,26 @@ rebuild_form();
 		</label>
 		<button type="submit">Save</button>
 	</form>
+
+	<?php if (!$parent_marriage): ?>
+	<form method="post" class="marriage new">
+		<?= csrf_field() ?>
+		<input type="hidden" name="action" value="add_parents">
+		<h3>Add parents</h3>
+		<p class="hint">Creates both parents and makes <?= h($p['name']) ?> their child.
+			Leave a name blank to add an unknown parent you can fill in later.
+			<?php if ($is_root || $drawn_here): ?>
+				Because <?= h($p['name']) ?> appears on the chart, the chart will start from
+				the new father afterwards.
+			<?php endif; ?>
+		</p>
+		<?php field('Father', 'father_name', '') ?>
+		<?php field('Mother', 'mother_name', '') ?>
+		<?php date_field('Married on', 'married_date_text', '') ?>
+		<?php field('Married at', 'married_place', '') ?>
+		<button type="submit">Add parents</button>
+	</form>
+	<?php endif; ?>
 </section>
 
 <section>
@@ -448,6 +541,19 @@ rebuild_form();
 		<?php field('State', 'married_state', '') ?>
 		<button type="submit">Add marriage</button>
 	</form>
+</section>
+
+<section>
+	<h2>Chart</h2>
+	<?php if ($is_root): ?>
+		<p>The chart starts from this person.</p>
+	<?php else: ?>
+		<form method="post" onsubmit="return confirm('Start the chart from <?= h($p['name']) ?>?')">
+			<?= csrf_field() ?>
+			<input type="hidden" name="action" value="make_root">
+			<button type="submit">Start the chart from this person</button>
+		</form>
+	<?php endif; ?>
 </section>
 
 <section>

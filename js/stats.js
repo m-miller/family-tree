@@ -13,12 +13,21 @@
 		return i === -1 ? null : i;
 	}
 
+	// Approximate qualifiers found in older records: 'abt 1250', 'c. 1220',
+	// 'bef 1300'. These give up a year but no month or day.
+	const APPROX = /^(abt|about|ca|c|circa|bef|before|aft|after|est|estimated|bet|between)\b\.?\s*(.+)$/i;
+
 	// Parse 'D Mon YYYY', 'Mon YYYY' or 'YYYY' without relying on the browser's Date parser.
 	// Returns {day, month, year} (missing parts are null), or null if unparseable.
 	function parseDate(str) {
 		if (typeof str !== 'string') return null;
 		const s = str.trim().replace(/\s+/g, ' ');
 		let m;
+		const approx = s.match(APPROX);
+		if (approx) {
+			const year = approx[2].match(/(\d{3,4})/);
+			return year ? { day: null, month: null, year: parseInt(year[1], 10) } : null;
+		}
 		if ((m = s.match(/^(\d{1,2}) ([A-Za-z]+) (\d{4})$/))) {
 			const month = monthIndex(m[2]);
 			const day = parseInt(m[1], 10);

@@ -8,14 +8,26 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 
 /**
  * Parse 'D Mon YYYY', 'Mon YYYY' or 'YYYY'. Returns [year, month, day]
- * with nulls for the parts that aren't known. Anything else (including
- * 'unknown' and 'abt 1850') parses to all nulls; the original text is
- * still stored, it just can't be counted in the stats.
+ * with nulls for the parts that aren't known.
+ *
+ * Approximate dates common in older records - 'abt 1250', 'c. 1220',
+ * 'bef 1300', 'aft 1200' - give up their year, but no month or day, since
+ * that is all they really claim. The original text is always stored as
+ * typed. Anything still unreadable, such as 'unknown', parses to all nulls.
  */
 function parse_date_text($text)
 {
     $s = trim(preg_replace('/\s+/', ' ', (string) $text));
     if ($s === '') {
+        return [null, null, null];
+    }
+
+    // a leading qualifier means the date is approximate: keep only the year
+    if (preg_match('/^(abt|about|ca|ca\.|c|c\.|circa|bef|before|aft|after|est|estimated|bet|between)\b\.?\s*(.+)$/i',
+                   $s, $q)) {
+        if (preg_match('/(\d{3,4})/', $q[2], $year)) {
+            return [(int) $year[1], null, null];
+        }
         return [null, null, null];
     }
     if (preg_match('/^(\d{1,2}) ([A-Za-z]+) (\d{4})$/', $s, $m)) {
@@ -230,6 +242,85 @@ function drawn_people($tree_id, $ignore_marriage_id = null, $ignore_child_id = n
         }
     }
     return $seen;
+}
+
+/**
+ * Point every marriage the right way round for the current root.
+ *
+ * A marriage hangs under one of its two people, and the chart only reaches
+ * the other through it. When the root moves - which is what happens when you
+ * add a generation above - marriages along the way face the wrong direction
+ * and whole branches fall off the chart. This walks out from the root and
+ * flips any marriage it meets from the spouse's side.
+ *
+ * Returns the number of marriages flipped.
+ */
+function reorient_tree($tree_id)
+{
+    $tree = fetch_one('SELECT root_person_id FROM trees WHERE id = ?', [(int) $tree_id]);
+    if (!$tree || $tree['root_person_id'] === null) {
+        return 0;
+    }
+
+    $marriages = fetch_all('SELECT * FROM marriages WHERE tree_id = ? ORDER BY ordinal, id',
+                           [(int) $tree_id]);
+    $by_person = [];   // person id -> marriages they are part of, either side
+    foreach ($marriages as $m) {
+        $by_person[(int) $m['person_id']][] = $m;
+        $by_person[(int) $m['spouse_id']][] = $m;
+    }
+    $children = [];
+    $sql = 'SELECT c.* FROM children c JOIN marriages m ON m.id = c.marriage_id WHERE m.tree_id = ?';
+    foreach (fetch_all($sql, [(int) $tree_id]) as $c) {
+        $children[(int) $c['marriage_id']][] = (int) $c['child_id'];
+    }
+
+    $flipped = 0;
+    $seen_people = [];
+    $seen_marriages = [];
+    $queue = [(int) $tree['root_person_id']];
+
+    while ($queue) {
+        $pid = array_shift($queue);
+        if (isset($seen_people[$pid])) {
+            continue;
+        }
+        $seen_people[$pid] = true;
+
+        foreach ($by_person[$pid] ?? [] as $m) {
+            $mid = (int) $m['id'];
+            if (isset($seen_marriages[$mid])) {
+                continue;
+            }
+            $seen_marriages[$mid] = true;
+
+            // reached from the spouse's side, so turn it around
+            if ((int) $m['spouse_id'] === $pid) {
+                query('UPDATE marriages SET person_id = ?, spouse_id = ? WHERE id = ?',
+                      [$pid, (int) $m['person_id'], $mid]);
+                $flipped++;
+                $other = (int) $m['person_id'];
+            } else {
+                $other = (int) $m['spouse_id'];
+            }
+
+            $queue[] = $other;
+            foreach ($children[$mid] ?? [] as $child_id) {
+                $queue[] = $child_id;
+            }
+        }
+    }
+
+    // ordinals may now clash after flipping; renumber per person
+    $seen_order = [];
+    foreach (fetch_all('SELECT id, person_id FROM marriages WHERE tree_id = ? ORDER BY person_id, ordinal, id',
+                       [(int) $tree_id]) as $m) {
+        $pid = (int) $m['person_id'];
+        $seen_order[$pid] = ($seen_order[$pid] ?? 0) + 1;
+        query('UPDATE marriages SET ordinal = ? WHERE id = ?', [$seen_order[$pid], (int) $m['id']]);
+    }
+
+    return $flipped;
 }
 
 /** Mark a tree's data as changed, so the admin pages know a rebuild is due. */
