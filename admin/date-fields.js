@@ -14,6 +14,43 @@
 
 	var FORMAT = 'd M yyyy';
 
+	function remInPixels() {
+		var size = parseFloat(getComputedStyle(document.documentElement).fontSize);
+		return size || 16;
+	}
+
+	/**
+	 * Put the picker beside the calendar button, one rem clear of it.
+	 *
+	 * The library anchors the picker to the input it owns - our hidden helper -
+	 * so it needs placing by hand. It is positioned, then measured and nudged,
+	 * because the visible card sits inside a wrapper with its own padding and
+	 * the offset parent isn't always the page.
+	 */
+	function placeBesideButton(button, element) {
+		var gap = remInPixels();
+		var card = element.querySelector('.datepicker-picker') || element;
+		var box = button.getBoundingClientRect();
+		var width = card.offsetWidth || 260;
+
+		// the left of the button by preference, the right if there's no room
+		var onLeft = box.left - gap - width >= gap;
+		var wantedX = onLeft ? box.left - gap - width : box.right + gap;
+		var wantedY = box.top;
+
+		element.style.position = 'absolute';
+		element.style.left = (wantedX + window.pageXOffset) + 'px';
+		element.style.top = (wantedY + window.pageYOffset) + 'px';
+		element.classList.toggle('from-right', onLeft);
+
+		// measure where the card actually landed and correct the difference
+		var landed = card.getBoundingClientRect();
+		if (landed.width) {
+			element.style.left = (parseFloat(element.style.left) + (wantedX - landed.left)) + 'px';
+			element.style.top = (parseFloat(element.style.top) + (wantedY - landed.top)) + 'px';
+		}
+	}
+
 	function attach(button) {
 		var input = document.getElementById(button.dataset.for);
 		if (!input) {
@@ -34,6 +71,23 @@
 			todayHighlight: true,
 			prevArrow: '\u2039',
 			nextArrow: '\u203A'
+		});
+
+		var pickerElement = picker.picker.element;
+		pickerElement.classList.add('beside-icon');
+
+		helper.addEventListener('show', function () {
+			placeBesideButton(button, pickerElement);
+			// next frame: the library positions on show too, so place again
+			// after it, and give the transition a starting point to move from
+			requestAnimationFrame(function () {
+				placeBesideButton(button, pickerElement);
+				pickerElement.classList.add('is-in');
+			});
+		});
+
+		helper.addEventListener('hide', function () {
+			pickerElement.classList.remove('is-in');
 		});
 
 		helper.addEventListener('changeDate', function () {

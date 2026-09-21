@@ -121,3 +121,25 @@ input.date-helper {
 }
 
 p.hint { color: #555; margin: .2rem 0 .6rem; }
+
+.datepicker.datepicker-orient-left {
+  margin-left: 4.5rem !important;
+  margin-top: -2rem !important;
+}
+
+/* the date picker slides in beside the calendar button */
+.datepicker.beside-icon {
+	opacity: 0;
+	transform: translateX(-.5rem);
+	transition: opacity .15s ease-out, transform .15s ease-out;
+}
+.datepicker.beside-icon.from-right {
+	transform: translateX(.5rem);
+}
+.datepicker.beside-icon.is-in {
+	opacity: 1;
+	transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+	.datepicker.beside-icon { transition: none; }
+}
