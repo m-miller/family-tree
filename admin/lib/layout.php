@@ -149,7 +149,7 @@ function rebuild_form()
  * A column heading that links to the same list sorted by that column,
  * flipping direction when it's already the active one.
  */
-function sort_link($column, $label, $current_sort, $current_dir, $tree_id, $search)
+function sort_link($column, $label, $current_sort, $current_dir, $tree_id, $search, $letter = '')
 {
     $is_current = $column === $current_sort;
     $next_dir = ($is_current && $current_dir === 'ASC') ? 'desc' : 'asc';
@@ -158,10 +158,56 @@ function sort_link($column, $label, $current_sort, $current_dir, $tree_id, $sear
         'dir'  => $next_dir,
         'tree' => $tree_id ?: null,
         'q'    => $search !== '' ? $search : null,
+        'letter' => $letter !== '' ? $letter : null,
     ]));
     $arrow = $is_current ? ($current_dir === 'ASC' ? " \u{25B2}" : " \u{25BC}") : '';
     return sprintf('<a class="sort%s" href="index.php?%s">%s%s</a>',
                    $is_current ? ' active' : '', h($query), h($label), $arrow);
+}
+
+/**
+ * The letter a person files under: the last word of their name, ignoring a
+ * trailing suffix, with accents folded so Müller files under M. Anything
+ * that doesn't start with a letter files under '#'.
+ */
+function surname_letter($name)
+{
+    $clean = trim(preg_replace('/[\s,]+(jr|sr|i{1,3}|iv|v)\.?$/i', '', trim($name)));
+    $parts = preg_split('/\s+/', $clean);
+    $surname = end($parts);
+    // drop quotes, brackets and the like from around the word
+    $surname = preg_replace('/^[^\p{L}]+/u', '', $surname);
+
+    // first character, without needing mbstring
+    $first = preg_match('/^./u', $surname, $m) ? $m[0] : '';
+    $folded = @iconv('UTF-8', 'ASCII//TRANSLIT', $first);
+    $letter = strtoupper(substr((string) $folded, 0, 1));
+    return preg_match('/^[A-Z]$/', $letter) ? $letter : '#';
+}
+
+/** The A-Z strip. $counts maps letter to how many people file under it. */
+function letter_links($counts, $current, $base_query)
+{
+    $letters = range('A', 'Z');
+    if (!empty($counts['#'])) {
+        $letters[] = '#';
+    }
+
+    $link = function ($value, $label, $enabled) use ($current, $base_query) {
+        $classes = 'letter' . ($value === $current ? ' active' : '') . ($enabled ? '' : ' is-empty');
+        if (!$enabled) {
+            return sprintf('<span class="%s">%s</span>', $classes, h($label));
+        }
+        $query = http_build_query(array_filter($base_query + ['letter' => $value]));
+        return sprintf('<button class="nav-btn" type="button"><a class="%s" href="index.php?%s">%s</a></button>', $classes, h($query), h($label));
+        
+    };
+
+    $out = [$link('', 'All', true)];
+    foreach ($letters as $letter) {
+        $out[] = $link($letter, $letter, !empty($counts[$letter]));
+    }
+    return '<nav class="letters">' . implode('', $out) . '</nav>';
 }
 
 /** A person's name with dates, for dropdowns and lists. */

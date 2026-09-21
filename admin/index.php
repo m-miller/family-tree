@@ -35,14 +35,31 @@ if ($search !== '') {
     $sql .= ' AND p.name LIKE ?';
     $params[] = '%' . $search . '%';
 }
-$sql .= ' ORDER BY ' . $order_by . ', p.name LIMIT 500';
-$people = fetch_all($sql, $params);
+$sql .= ' ORDER BY ' . $order_by . ', p.name';
+$all = fetch_all($sql, $params);
+
+// Group by the first letter of the surname. Done here rather than in SQL so
+// that suffixes ("Sr.") and accents behave, and so it doesn't depend on the
+// server having REGEXP_REPLACE.
+$letter = isset($_GET['letter']) ? strtoupper(substr($_GET['letter'], 0, 1)) : '';
+$counts = [];
+$people = [];
+foreach ($all as $person) {
+    $initial = surname_letter($person['name']);
+    $counts[$initial] = ($counts[$initial] ?? 0) + 1;
+    if ($letter === '' || $initial === $letter) {
+        $people[] = $person;
+    }
+}
+$total = count($people);
+$people = array_slice($people, 0, 500);
 
 page_header('People');
 ?>
 <?php rebuild_form() ?>
 
 <form method="get" class="inline">
+	<input type="hidden" name="letter" value="<?= h($letter) ?>">
 	<label class="inline-label">Tree
 		<select name="tree" onchange="this.form.submit()">
 			<option value="0">All</option>
@@ -59,15 +76,19 @@ page_header('People');
 	<button type="submit">Go</button>
 </form>
 
-<p class="count"><?= count($people) ?> people<?= count($people) === 500 ? ' (showing the first 500)' : '' ?></p>
+<?= letter_links($counts, $letter, ['tree' => $tree_id ?: null, 'q' => $search !== '' ? $search : null,
+                                    'sort' => $sort !== 'name' ? $sort : null,
+                                    'dir' => $dir === 'DESC' ? 'desc' : null]) ?>
+
+<p class="count"><?= $total ?> people<?= $letter !== '' ? ' with surnames beginning ' . h($letter) : '' ?><?= $total > 500 ? ' (showing the first 500)' : '' ?></p>
 
 <table class="people">
 	<thead>
 		<tr>
-			<td><?= sort_link('name', 'Name', $sort, $dir, $tree_id, $search) ?></td>
-			<td>Tree</td>
-			<td><?= sort_link('born', 'Born', $sort, $dir, $tree_id, $search) ?></td>
-			<td><?= sort_link('died', 'Died', $sort, $dir, $tree_id, $search) ?></td>
+			<td style="width:40rem"><?= sort_link('name', 'Name', $sort, $dir, $tree_id, $search, $letter) ?></td>
+			<td style="width:10rem">Tree</td>
+			<td style="width:10rem"><?= sort_link('born', 'Born', $sort, $dir, $tree_id, $search, $letter) ?></td>
+			<td style="width:10rem"><?= sort_link('died', 'Died', $sort, $dir, $tree_id, $search, $letter) ?></td>
 			<td></td>
 		</tr>
 	</thead>
