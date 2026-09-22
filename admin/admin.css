@@ -178,16 +178,13 @@ nav.letters {
 }
 
 .nav-btn {
-    padding: 0;
+    padding: 0!important;
     border: none;
     width: 25px;
     height: 25px;
     background: transparent;
+	align-content: center;
 	margin-left: 5px;
-}
-
-.nav-btn:first-of-type {
-	margin-right: 5px;
 }
 
 nav.letters .letter {

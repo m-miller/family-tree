@@ -199,8 +199,7 @@ function letter_links($counts, $current, $base_query)
             return sprintf('<span class="%s">%s</span>', $classes, h($label));
         }
         $query = http_build_query(array_filter($base_query + ['letter' => $value]));
-        return sprintf('<button class="nav-btn" type="button"><a class="%s" href="index.php?%s">%s</a></button>', $classes, h($query), h($label));
-        
+        return sprintf('<a class="nav-btn %s" href="index.php?%s">%s</a>', $classes, h($query), h($label));        
     };
 
     $out = [$link('', 'All', true)];
