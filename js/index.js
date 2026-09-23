@@ -143,7 +143,7 @@
 
 	// ---------- cards lean towards the pointer ----------
 
-	var TILT = 15;          // degrees at the very edge of a card
+	var TILT = 12.5;          // degrees at the very edge of a card
 	var LIFT = 1.05;        // how much it grows while under the pointer
 	var FOLLOW = 'transform 80ms linear';
 	var SETTLE = 'transform 550ms cubic-bezier(.34, 1.56, .64, 1)';
