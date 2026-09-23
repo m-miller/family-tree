@@ -36,11 +36,11 @@ h1 {
 	stroke-dasharray: 3,3;
 }
 .man {
-	background-color: hsl(0, 0%, 83%);
+	background-color: hsl(224.37deg 22.7% 82.65%);
 	border: 1px solid black;
 }
 .man:hover {
-	background-color: hsl(0, 0%, 63%);
+	background-color: hsl(222.21deg 17.32% 68.81%);
 }
 .woman {
 	background-color: hsl(120, 73%, 75%);
@@ -118,13 +118,13 @@ div > p {
 	border-radius: 10px;
 	border: 1px solid black;
 	cursor:pointer;
-	font-size: 1.75rem;
-	line-height: .6;
+	font-size: 1.5rem;
+	line-height: .7;
 	text-align: center;
 }
 /* info panel colours (match the node hover colours) */
 .info-man {
-	background-color: hsl(0, 6%, 80%);
+	background-color: hsl(224.37deg 22.7% 82.65%);
 }
 .info-woman {
 	background-color: hsl(120, 77%, 82%);
