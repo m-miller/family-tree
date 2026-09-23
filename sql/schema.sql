@@ -50,6 +50,7 @@ CREATE TABLE people (
   birth_state_province   VARCHAR(255) NOT NULL DEFAULT '',
   birth_zip_postal_code  VARCHAR(30)  NOT NULL DEFAULT '',
   birth_country          VARCHAR(255) NOT NULL DEFAULT '',
+  birth_source           TEXT         NULL,           -- where the birth details came from
 
   death_date_text        VARCHAR(60)  NOT NULL DEFAULT '',
   death_year             SMALLINT     NULL,
@@ -62,6 +63,7 @@ CREATE TABLE people (
   death_state_province   VARCHAR(255) NOT NULL DEFAULT '',
   death_zip_postal_code  VARCHAR(30)  NOT NULL DEFAULT '',
   death_country          VARCHAR(255) NOT NULL DEFAULT '',
+  death_source           TEXT         NULL,           -- where the death details came from
 
   buried                 TEXT         NULL,
   buried_link            VARCHAR(1000) NOT NULL DEFAULT '',  -- cemetery map
@@ -97,6 +99,7 @@ CREATE TABLE marriages (
   married_place      VARCHAR(255) NOT NULL DEFAULT '',
   married_city       VARCHAR(255) NOT NULL DEFAULT '',
   married_state      VARCHAR(255) NOT NULL DEFAULT '',
+  married_source     TEXT         NULL,               -- where the marriage details came from
   PRIMARY KEY (id),
   UNIQUE KEY uq_marriage_person_ordinal (person_id, ordinal),
   UNIQUE KEY uq_marriage_pair (person_id, spouse_id),

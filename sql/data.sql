@@ -65,7 +65,8 @@ CREATE TABLE `marriages` (
   `married_day` tinyint(4) DEFAULT NULL,
   `married_place` varchar(255) NOT NULL DEFAULT '',
   `married_city` varchar(255) NOT NULL DEFAULT '',
-  `married_state` varchar(255) NOT NULL DEFAULT ''
+  `married_state` varchar(255) NOT NULL DEFAULT '',
+  `married_source` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -95,6 +96,7 @@ CREATE TABLE `people` (
   `birth_state_province` varchar(255) NOT NULL DEFAULT '',
   `birth_zip_postal_code` varchar(30) NOT NULL DEFAULT '',
   `birth_country` varchar(255) NOT NULL DEFAULT '',
+  `birth_source` text DEFAULT NULL,
   `death_date_text` varchar(60) NOT NULL DEFAULT '',
   `death_year` smallint(6) DEFAULT NULL,
   `death_month` tinyint(4) DEFAULT NULL,
@@ -106,6 +108,7 @@ CREATE TABLE `people` (
   `death_state_province` varchar(255) NOT NULL DEFAULT '',
   `death_zip_postal_code` varchar(30) NOT NULL DEFAULT '',
   `death_country` varchar(255) NOT NULL DEFAULT '',
+  `death_source` text DEFAULT NULL,
   `buried` text DEFAULT NULL,
   `buried_link` varchar(1000) NOT NULL DEFAULT '',
   `buried_grave` varchar(1000) NOT NULL DEFAULT '',

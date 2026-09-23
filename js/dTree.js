@@ -89,7 +89,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         // filter links with no parents to prevent empty nodes
         .filter(function (l) {
           return !l.target.data.noParent;
-        }).append('path').attr('class', opts.styles.linage).attr('d', this._elbow);
+        }).append('path').attr('class', opts.styles.linage).attr('d', this._elbow)
+        // added: name the two nodes a link joins, so other code can find them
+        .attr('data-source', function (l) {
+          return l.source.data.id;
+        }).attr('data-target', function (l) {
+          return l.target.data.id;
+        });
 
         var nodes = this.g.selectAll('.node').data(treenodes.descendants()).enter();
 
@@ -105,7 +111,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
           return d.number > 0 ? opts.styles.nthMarriage : opts.styles.marriage;
         })
-        .attr('d', _.bind(this._siblingLine, this));
+        .attr('d', _.bind(this._siblingLine, this))
+        // added: as above, for the lines joining spouses
+        .attr('data-source', function (d) {
+          return d.source.id;
+        }).attr('data-target', function (d) {
+          return d.target.id;
+        });
 
         // Create the node rectangles.
         nodes.append('foreignObject').filter(function (d) {

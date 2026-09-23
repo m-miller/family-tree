@@ -39,12 +39,14 @@
 			part(e.birth_city, '<br />') +
 			part(e.birth_state_province, ', ') +
 			part(e.birth_country, '<br />') +
+			part(e.birth_source, '<br /><span class="source">Source: ', '</span>') +
 			// marriage
 			part(e.married_to, '<hr />Married to: ') +
 			part(e.married_date, '<br />on: ') +
 			part(e.married_place, '<br />at: ') +
 			part(e.married_city, '<br />') +
 			part(e.married_state, ', ') +
+			part(e.married_source, '<br /><span class="source">Source: ', '</span>') +
 			(has(e.link) ? '<br /><a href="' + escapeHtml(e.link) + '.html">' + escapeHtml(e.link) + ' Family Tree</a>' : '') +
 			'<hr />' +
 			// death
@@ -55,6 +57,7 @@
 			part(e.death_city, '<br />') +
 			part(e.death_state_province, ', ') +
 			part(e.death_country, '<br />') +
+			part(e.death_source, '<br /><span class="source">Source: ', '</span>') +
 			// burial
 			part(e.buried, '<br />Buried: ') +
 			externalLink(e.buried_link, 'Cemetery Map') +
@@ -138,6 +141,65 @@
 		document.getElementById('graph').appendChild(bar);
 	}
 
+	// ---------- cards lean towards the pointer ----------
+
+	var TILT = 15;          // degrees at the very edge of a card
+	var LIFT = 1.05;        // how much it grows while under the pointer
+	var FOLLOW = 'transform 80ms linear';
+	var SETTLE = 'transform 550ms cubic-bezier(.34, 1.56, .64, 1)';
+
+	function addCardTilt(graph) {
+		if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			return;
+		}
+
+		var hovered = null;
+
+		function release(card) {
+			if (!card) return;
+			card.style.transition = SETTLE;
+			card.style.transform = '';
+		}
+
+		graph.addEventListener('mousemove', function (event) {
+			var card = event.target.closest ? event.target.closest('.man, .woman, .unknown') : null;
+
+			if (card !== hovered) {
+				release(hovered);
+				hovered = card;
+				if (card) {
+					// a quick lean in, then it tracks the pointer
+					card.style.transition = SETTLE;
+				}
+			}
+			if (!card) return;
+
+			var box = card.getBoundingClientRect();
+			if (!box.width || !box.height) return;
+
+			// -1 at the left or top edge, +1 at the right or bottom
+			var acrossX = (event.clientX - (box.left + box.width / 2)) / (box.width / 2);
+			var acrossY = (event.clientY - (box.top + box.height / 2)) / (box.height / 2);
+			acrossX = Math.max(-1, Math.min(1, acrossX));
+			acrossY = Math.max(-1, Math.min(1, acrossY));
+
+			card.style.transform = 'perspective(600px) rotateY(' + (acrossX * TILT).toFixed(2) + 'deg)'
+				+ ' rotateX(' + (-acrossY * TILT).toFixed(2) + 'deg)'
+				+ ' scale(' + LIFT + ')';
+
+			// after the first frame, follow the pointer without lag
+			window.setTimeout(function () {
+				if (hovered === card) card.style.transition = FOLLOW;
+			}, 0);
+		});
+
+		// leaving the graph entirely, or the window
+		graph.addEventListener('mouseleave', function () {
+			release(hovered);
+			hovered = null;
+		});
+	}
+
 	// ---------- init ----------
 
 	d3.json(thefile, function (error, treeData) {
@@ -161,5 +223,6 @@
 		});
 		addSpouseStyles();
 		addZoomControls(tree);
+		addCardTilt(document.getElementById('graph'));
 	});
 })();

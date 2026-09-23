@@ -169,3 +169,23 @@ div > p {
 	stroke-linecap: round;
 	fill: none;
 }
+.source {
+	font-size: .8rem;
+	font-style: italic;
+	opacity: .85;
+}
+
+#graph foreignObject {
+	overflow: visible;
+}
+
+/* cards lean towards the pointer; the shadow sells the lift */
+.man, .woman, .unknown {
+	transform-origin: center center;
+	will-change: transform;
+}
+.man:hover, .woman:hover, .unknown:hover {
+	box-shadow: 0 6px 14px rgba(0, 0, 0, .28);
+	position: relative;
+	z-index: 2;
+}

@@ -11,9 +11,9 @@ require_login();
 /** Columns the person form writes, so adding a field means touching one list. */
 const PERSON_FIELDS = [
     'name', 'birthplace_name', 'birth_address1', 'birth_address2', 'birth_city',
-    'birth_state_province', 'birth_zip_postal_code', 'birth_country',
+    'birth_state_province', 'birth_zip_postal_code', 'birth_country', 'birth_source',
     'deathplace_name', 'death_address1', 'death_address2', 'death_city',
-    'death_state_province', 'death_zip_postal_code', 'death_country',
+    'death_state_province', 'death_zip_postal_code', 'death_country', 'death_source',
     'buried', 'buried_link', 'buried_grave', 'notes', 'linked_tree',
 ];
 
@@ -284,7 +284,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'married_date_text' => $date_text, 'married_year' => $my,
             'married_month' => $mm, 'married_day' => $md,
             'married_place' => post('married_place'), 'married_city' => post('married_city'),
-            'married_state' => post('married_state'),
+            'married_state' => post('married_state'), 'married_source' => post('married_source'),
             'spouse_id' => $spouse_id,
         ];
 
@@ -428,6 +428,7 @@ rebuild_form();
 		<?php field('State or province', 'birth_state_province', $p['birth_state_province']) ?>
 		<?php field('Postal code', 'birth_zip_postal_code', $p['birth_zip_postal_code']) ?>
 		<?php field('Country', 'birth_country', $p['birth_country']) ?>
+		<?php textarea('Source (where these details came from)', 'birth_source', $p['birth_source']) ?>
 	</fieldset>
 
 	<fieldset>
@@ -440,6 +441,7 @@ rebuild_form();
 		<?php field('State or province', 'death_state_province', $p['death_state_province']) ?>
 		<?php field('Postal code', 'death_zip_postal_code', $p['death_zip_postal_code']) ?>
 		<?php field('Country', 'death_country', $p['death_country']) ?>
+		<?php textarea('Source', 'death_source', $p['death_source']) ?>
 	</fieldset>
 
 	<fieldset>
@@ -515,6 +517,7 @@ rebuild_form();
 		<?php field('Place', 'married_place', $m['married_place']) ?>
 		<?php field('City', 'married_city', $m['married_city']) ?>
 		<?php field('State', 'married_state', $m['married_state']) ?>
+		<?php textarea('Source', 'married_source', $m['married_source']) ?>
 		<button type="submit">Save this marriage</button>
 		<button type="submit" name="action" value="delete_marriage" class="danger"
 			onclick="return confirm('Remove this marriage?')">Remove</button>
@@ -539,6 +542,7 @@ rebuild_form();
 		<?php field('Place', 'married_place', '') ?>
 		<?php field('City', 'married_city', '') ?>
 		<?php field('State', 'married_state', '') ?>
+		<?php textarea('Source', 'married_source', '') ?>
 		<button type="submit">Add marriage</button>
 	</form>
 </section>
