@@ -5,7 +5,7 @@ Online d3 dTree visualization of one side of the family tree. Mostly a [d3](http
 
 The public pages are static: HTML, CSS and plain JavaScript reading a JSON file. Behind them sit a MySQL database and a small PHP admin app for editing, which writes the JSON files out again.
 
-<img width="1636" height="741" alt="Screenshot 2026-09-25 at 02 34 59" src="https://github.com/user-attachments/assets/82664954-e0be-4c50-b1f2-6eaa707bdc70" />
+<img width="1649" height="728" alt="Screenshot 2026-09-25 at 18 56 22" src="https://github.com/user-attachments/assets/5cf00a8e-42b1-4320-b82c-be955f7baf5a" />
 
 ## Pages
 
