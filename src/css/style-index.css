@@ -1,0 +1,218 @@
+body {
+	font: 1rem sans-serif;
+	background-color: black;
+}
+h1 {
+	color: white;
+}
+#graph {
+	position: relative;
+	cursor: grab;
+	background-color: white;
+	border-radius: 10px;
+}
+#graph:active {
+	cursor: grabbing;
+}
+.nodeText {
+	text-align: center;
+}
+.linage {
+	fill: none;
+	stroke: #000;
+}
+.marriage {
+	fill: none;
+	stroke: black;
+}
+.marriageNode {
+	background-color: black;
+	border-radius: 50%;
+}
+.nthMarriage {
+	fill: none;
+	stroke: #2e2c2e;
+	stroke-width: 1px;
+	stroke-dasharray: 3,3;
+}
+.man {
+	background-color: hsl(0, 0%, 83%);
+	border: 1px solid black;
+}
+.man:hover {
+	background-color: hsl(0, 0%, 63%);
+}
+.woman {
+	background-color: hsl(120, 73%, 75%);
+	border: 1px solid black;
+}
+.woman:hover {
+	background-color: hsl(120, 73%, 55%);
+}
+.unknown {
+	background-color: hsl(210, 45%, 85%);
+	border: 1px solid black;
+}
+.unknown:hover {
+	background-color: hsl(210, 45%, 65%);
+}
+.emphasis{
+	font-style: italic;
+}
+svg {
+	border-style: solid;
+	border-width: 1px;
+}
+foreignObject {
+	cursor: pointer;
+	/* No height here: in SVG2 this is a CSS property and would override the
+	   height dTree sets on each card, which is what the connector lines are
+	   positioned against. Setting it puts every marriage line off centre. */
+}
+foreignObject > div {
+	border-radius: 5px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	box-sizing: border-box;
+
+}
+div > p {
+	font-size: .75rem;
+	letter-spacing: -0.3px;
+	margin: 0.25rem 0;
+}
+#head-info {
+	color: white;
+}
+#head-info a {
+	text-decoration-style: underline;
+	color: white;
+}
+#head-info a:hover {
+	color: lightgreen;
+	text-decoration-style: dashed;
+	text-decoration-color: lightgreen;
+	text-decoration-thickness: 3px;
+}
+.halfrem {
+	font-size: .5rem;
+}
+.info {
+	cursor: default;
+	width: 250px;
+	height: auto;
+	position: absolute;
+	padding: 1rem;
+	top: 20px;
+	left: 140px;
+	border: 1px solid black;
+	border-radius: 10px;
+	font-size: .9rem;
+}
+#close {
+	position: absolute;
+	color: black;
+	top: -11px;
+	right: -11px;
+	width: 20px;
+	height: 20px;
+	background-color: white;
+	border-radius: 10px;
+	border: 1px solid black;
+	cursor:pointer;
+	font-size: 1.75rem;
+	line-height: .6;
+	text-align: center;
+}
+/* info panel colours (match the node hover colours) */
+.info-man {
+	background-color: hsl(0, 6%, 80%);
+}
+.info-woman {
+	background-color: hsl(120, 77%, 82%);
+}
+.info-unknown {
+	background-color: hsl(210, 45%, 65%);
+}
+
+/* zoom controls, bottom right of the tree */
+.zoom-controls {
+	position: absolute;
+	left: 20px;
+	top: 20px;
+	display: grid;
+	grid-template-columns: repeat(3, auto);
+	justify-items: center;
+	gap: 0;
+	cursor: default;
+}
+/* a gap between the direction pad and the zoom buttons below it */
+.zoom-controls button.below-pad {
+	margin-top: 10px;
+}
+.zoom-controls button {
+	width: 34px;
+	height: 34px;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(255, 255, 255, .9);
+	border: none;
+	cursor: pointer;
+}
+.zoom-controls button:hover {
+	background: #fff;
+}
+.zoom-controls button:focus-visible {
+	outline: 2px solid #045FB4;
+	outline-offset: 1px;
+}
+.zoom-controls svg {
+	width: 26px;
+	height: 26px;
+	stroke: #222;
+	stroke-width: 1.6;
+	stroke-linecap: round;
+	fill: none;
+}
+.source {
+	font-size: .8rem;
+	font-style: italic;
+	opacity: .85;
+}
+
+/* A foreignObject clips whatever it holds to its own box, which would slice
+   the corners and border off a tilted card. */
+#graph foreignObject {
+	overflow: visible;
+}
+
+/* cards lean towards the pointer; the shadow sells the lift */
+.man, .woman, .unknown {
+	transform-origin: center center;
+	will-change: transform;
+}
+.man:hover, .woman:hover, .unknown:hover {
+	box-shadow: 0 6px 14px rgba(0, 0, 0, .28);
+	position: relative;
+	z-index: 2;
+}
+/* relationship line and buttons in the info panel */
+.info .relation {
+	font-style: italic;
+}
+.info button {
+	margin-top: .4rem;
+	padding: .2rem .5rem;
+	font: inherit;
+	font-size: .8rem;
+	cursor: pointer;
+	border: 1px solid #444;
+	border-radius: 4px;
+	background: rgba(255, 255, 255, .85);
+}
+.info button:hover {
+	background: #fff;
+}

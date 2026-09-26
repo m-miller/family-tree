@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes" />
+<title>Miller Family Tree Stats</title>
+
+
+<link rel="stylesheet" href="css/style-stats.css">
+<script src="https://d3js.org/d3.v4.min.js" defer></script>
+<script src="js/stats.js" defer></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DD00EGY94V"></script>
+<script src="js/gtag.js"></script>
+</head>
+
+<body>
+		<h1>Miller Family Tree Stats</h1>
+		<div class="container">
+		<div id="bdays">
+			<table id = "birthdays">
+				<caption>Birthday Months</caption>
+				<thead>
+					<tr><td>Month</td><td>Count</td></tr>
+				</thead>
+					<tbody id = "bdaysbody">
+					</tbody>
+			</table>
+			
+		</div>
+		<div id="ddays">
+			<table id="deaths">
+				<caption>Death Months</caption>
+				<thead>
+					<tr><td>Month</td><td>Count</td></tr>
+				</thead>
+					<tbody id = "ddaysbody">
+					</tbody>
+			</table>
+			
+		</div>
+		
+		<div id="names">
+			<table id="nameslist">
+				<caption>First Names</caption>
+				<thead>
+					<tr><td>Name</td><td>Count</td></tr>
+				</thead>
+					<tbody id = "namesbody">
+					</tbody>
+			</table>
+			
+		</div>
+
+		<div id="ages">
+			<table id="age">
+				<caption>Ages</caption>
+				<thead>
+					<tr><td>Age at Death</td><td>Count</td></tr>
+				</thead>
+					<tbody id = "agesbody">
+					</tbody>
+			</table>
+			
+		</div>
+		
+    <div id="charts">
+		<div id="namesgraph"><p>Counts of 20 most popular names</p> </div>
+
+    <div id="agesgraph"><p>Counts of 20 most common ages</p> </div>
+
+    <div id="married"><p>Counts of most common months to get married</p> </div>
+		</div>
+	</div>
+    
+</body>
+</html>

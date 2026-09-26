@@ -1,0 +1,219 @@
+/* Admin styling. Plain and functional; nothing here affects the public pages. */
+:root { --line: #ccc; --warn: #8a6d00; --error: #a10000; }
+
+body {
+	font-family: Verdana, Geneva, sans-serif;
+	font-size: .85rem;
+	margin: 0;
+	color: #222;
+	background: #f6f6f6;
+} 
+
+a {
+	color: #222;
+}
+
+a:hover {
+	color: #0fa433;
+}
+
+nav { 
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: .6rem 1rem;
+	color: #fff;
+}
+
+nav.topbar {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	padding: .6rem 1rem;
+	border-bottom: 1px solid #222;
+}
+
+nav a { color: #fff; }
+nav.topbar a { color: #222; }
+nav .spacer { flex: 1; }
+nav .who { opacity: .75;  color: #222 }
+main {
+	max-width: 80rem;
+	width: 80rem;
+	margin: 1rem auto;
+	padding: 1rem 1.5rem 3rem;
+	background: #fff;
+	border: 1px solid var(--line);
+}
+h1 { font-size: 1.3rem; }
+h2 { font-size: 1.05rem; margin-top: 2rem; }
+h3 { font-size: .95rem; }
+
+label { display: block; margin: .4rem 0; }
+label.check, label.inline-label { display: inline-block; margin-right: 1rem; }
+input[type=text], input[type=password], input[type=search], textarea, select {
+	display: block;
+	width: 100%;
+	max-width: 28rem;
+	padding: .6rem;
+	font: inherit;
+	border: 1px solid var(--line);
+	box-sizing: border-box;
+}
+label.inline-label input, label.inline-label select { display: inline-block; width: auto; }
+button {
+	padding: .4rem .9rem;
+	font: inherit;
+	cursor: pointer;
+	border: 1px solid #666;
+	border-radius: 4px;
+	background: #eee;
+}
+button.danger { border-color: var(--error); color: var(--error); }
+a.cancel { margin-left: 1rem; }
+
+.person { display: flex; flex-direction: row; flex-wrap: wrap; gap: 1rem; }
+
+form.narrow { max-width: 22rem; }
+form.inline { display: inline-block; margin: 0 1rem 1rem 0; }
+fieldset { border: 1px solid var(--line); margin: 1rem 0; padding: .5rem 1rem 1rem; }
+textarea { max-width: 370px; min-width: 370px; min-height: 5rem; }
+legend { font-weight: bold; }
+form.person fieldset { width: 29%; }
+form.marriage { border: 1px solid var(--line); padding: .5rem 1rem; margin-bottom: 1rem; }
+
+.flash { padding: .5rem .8rem; border-left: 4px solid #777; background: #f0f0f0; }
+.flash.ok { border-color: #2a7; }
+.flash.warn { border-color: var(--warn); }
+.flash.error { border-color: var(--error); }
+.warn { color: var(--warn); margin-left: .5rem; }
+
+table.people { border-collapse: collapse; width: 100%; }
+table.people td { border-bottom: 1px solid var(--line); padding: .35rem .5rem; }
+table.people thead td { font-weight: bold; border-bottom-width: 2px; }
+.tag {
+	font-size: .7rem;
+	background: #eee;
+	border: 1px solid var(--line);
+	padding: 0 .3rem;
+	margin-left: .3rem;
+}
+.count { color: #666; }
+
+/* rebuild button and its status note */
+form.rebuild { display: block; margin-bottom: 1rem; }
+form.rebuild.is-stale { padding: .5rem .8rem; border-left: 4px solid var(--warn); background: #fffbe8; }
+.ok-note { color: #2a7; margin-left: .5rem; }
+
+/* sortable column headings in the people list */
+table.people thead a.sort { text-decoration: none; color: inherit; }
+table.people thead a.sort:hover { text-decoration: underline; }
+table.people thead a.sort.active { text-decoration: none; }
+
+/* date fields: text box plus a calendar button */
+.date-row { display: flex; gap: .3rem; max-width: 28rem; }
+.date-row input[type=text] { flex: 1; }
+button.date-button {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: .2rem;
+	line-height: 0;
+	border: none;
+	background: white;
+}
+button.date-button svg {
+	width: 30px;
+	height: 30px;
+	fill: none;
+	stroke: #222;
+	stroke-width: 1.5;
+	stroke-linecap: round;
+}
+input.date-helper {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	border: 0;
+	opacity: 0;
+	pointer-events: none;
+}
+
+p.hint { color: #555; margin: .2rem 0 .6rem; }
+
+/* the date picker grows out of the calendar button */
+.datepicker-picker {
+	border: 1px solid #0fa433;
+}
+.datepicker-dropdown {
+	padding-top: 0!important;
+	margin-top: -8px !important;
+}
+.datepicker.beside-icon {
+	opacity: 0;
+	transform: scale(.15);
+	/* transform-origin is set in JS, to the corner nearest the button */
+	transition: opacity .4s ease-out, transform 1s cubic-bezier(.34, 1.56, .64, 1);
+}
+.datepicker.beside-icon.is-in {
+	opacity: 1;
+	transform: none;
+}
+/* while being measured: full size, no animation, still invisible */
+.datepicker.beside-icon.measuring {
+	transform: none;
+	transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+	.datepicker.beside-icon { transition: none; }
+}
+
+/* A-Z strip above the people list */
+nav.letters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .2rem;
+	margin: .8rem 0;
+}
+
+.nav-btn {
+    padding: 0!important;
+    border: none;
+    width: 25px;
+    height: 25px;
+	align-content: center;
+	margin-left: 5px;
+}
+
+nav.letters .letter {
+	padding: .25rem .4rem;
+	text-align: center;
+	border: 1px solid var(--line);
+	border-radius: 4px;
+	text-decoration: none;
+	color: #222;
+	background: #fff;
+}
+
+nav.letters a.letter:hover {
+	border-color: #222;
+	background: #f2f2f2;
+}
+
+nav.letters .letter.active {
+	background: #333;
+	border-color: #333;
+	color: #fff;
+}
+
+nav.letters .letter.active:hover {
+	color: #222;
+}
+
+nav.letters .letter.is-empty {
+	color: #bbb;
+	background: #fafafa;
+	margin-left: 5px;
+}

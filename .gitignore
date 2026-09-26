@@ -1,0 +1,8 @@
+**/.DS_Store
+
+# admin config holds the database password
+**/admin/config.php
+
+# python bytecode from the sql tools
+__pycache__/
+*.pyc
