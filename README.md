@@ -16,7 +16,28 @@ The public pages are static: HTML, CSS and plain JavaScript reading a JSON file.
 | `stats.html` | Charts and tables built from `data.json` in the browser |
 | `admin/` | Password-protected editor (PHP + MySQL) |
 
-Clicking a person opens a panel with their dates, places, burial links and notes. Nodes are coloured by sex: grey for men, green for women, blue where it isn't known. Multiple marriages get a progressively darker left border.
+Clicking a person opens a panel with their dates, places, burial links, sources and notes. Nodes are
+coloured by sex: grey for men, green for women, blue where it isn't known. Multiple marriages get a
+progressively darker left border, and cards lean towards the pointer as it passes over them.
+
+### Moving around the tree
+
+A pad of controls sits over the chart: arrows to scroll in each direction, a button to return to the
+starting view, and below them zoom out, fit the whole tree, and zoom in. Holding an arrow picks up
+speed the longer it is held and coasts to a stop when released. The tree can also be dragged and
+zoomed with the mouse as before.
+
+### Who is related to whom
+
+The panel has a **How is this person related to...** button. Press it, then click a second person,
+and their panel names the relationship: parents and grandparents, siblings, uncles and aunts with
+their grand- and great- prefixes, nephews and nieces, Nth cousins with "once removed" counts, and
+in-laws. The panel stays open while a comparison is in progress, so the arrows and zoom can be used
+to reach someone on the far side of the chart.
+
+This is worked out in `js/relate.js` from the tree data itself - the nesting already says who the
+parents, children and spouses are - so it needs nothing stored and no ids. Half-siblings are not
+distinguished from full siblings.
 
 ## How the data flows
 
@@ -54,6 +75,26 @@ public repo. Back up the real database by exporting it from phpMyAdmin and keepi
 `data.json` is the exception - it is generated, and public on the site anyway, so it is committed to
 let the pages work straight from a clone.
 
+## The admin
+
+The people list filters by tree, by a name search, and by an A-Z strip that groups people on the
+first letter of their surname - the last word of the name, ignoring suffixes like "Jr", so Müller
+files under M and "George Albert Burke, Sr." under B. Letters with nobody behind them are greyed
+out. Name, born and died are all sortable, and the date columns sort chronologically rather than
+alphabetically, with unknown dates last.
+
+A person's page edits every field, sets who their parents are, manages their marriages, and deletes.
+Two things there are worth knowing:
+
+- **Add parents** creates a father and mother for someone who has none and makes them their child.
+  A chart has to start from one person, so it also moves the root up to the new father and turns any
+  marriages in between the right way round. That is how the tree grows backwards a generation at a
+  time. **Start the chart from this person** does the same re-rooting by hand.
+- **Sources**: birth, death and marriage each take a free-text note of where the details came from -
+  a parish register, a page in the binder, a letter. The tree shows a source line only where one has
+  been recorded. This data was compiled by several relatives over sixty years and disagrees with
+  itself in places, so knowing who said what is how those are settled.
+
 ## The database
 
 Four tables, plus `users`:
@@ -72,9 +113,12 @@ Genealogy dates are often partial, so each is stored twice: the original text ex
 | `3 Mar 1902` | 1902 | 3 | 3 |
 | `Mar 1902` | 1902 | 3 | - |
 | `1902` | 1902 | - | - |
-| `unknown`, `abt 1850` | - | - | - |
+| `unknown` | - | - | - |
+| `abt 1250`, `c. 1220`, `bef 1300` | 1250, 1220, 1300 | - | - |
 
-Anything unparseable is kept as typed and flagged in the form, but can't be counted in the stats. The same parser exists in PHP (`admin/lib/tree.php`) and JavaScript (`js/stats.js`), so both agree.
+Approximate dates give up their year and nothing more, which is all they really claim; that is
+enough to sort by and to place a generation. Anything still unreadable is kept as typed and flagged
+in the form, but can't be counted in the stats. The same parser exists in PHP (`admin/lib/tree.php`) and JavaScript (`js/stats.js`), so both agree.
 
 ### One person, one node
 
@@ -85,7 +129,7 @@ dTree draws a tree, not a graph, so each person appears exactly once. The admin 
     index.html, Horne.html, stats.html   the public pages
     data.json, horne.json                generated; edit through admin/, not by hand
     css/                                 styles
-    js/                                  index.js, info.js, stats.js, dTree.js, gtag.js
+    js/                                  index.js, info.js, relate.js, stats.js, dTree.js, gtag.js
     admin/                               the editor
       lib/                               db, auth, layout, tree building, error handling
     sql/                                 schema, data, migrations and the import scripts
