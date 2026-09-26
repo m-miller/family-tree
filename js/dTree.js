@@ -2,8 +2,10 @@
  * dTree, modified for milleronic.com.
  *
  * Based on ErikGartner/dTree (https://github.com/ErikGartner/dTree), MIT
- * licensed. This copy has diverged from upstream, so a new release cannot be
- * dropped in over it - the changes below would have to be merged by hand.
+ * licensed. Upstream has been dormant since 2019, so this copy is where the
+ * work continues; there is no newer release to merge. It also fixes the stack
+ * in place: dTree is written against d3 v4, and moving to a later d3 would
+ * mean rewriting this file rather than upgrading it.
  *
  * What differs from upstream:
  *

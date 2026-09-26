@@ -99,6 +99,8 @@ dTree draws a tree, not a graph, so each person appears exactly once. The admin 
   on-screen controls. The header of that file lists every difference; it has diverged enough that
   a new upstream release cannot simply be dropped in.
 - dTree is by Erik Gärtner, MIT licensed. The licence is kept alongside it in `js/dTree.LICENSE`,
-  and the original lives at https://github.com/ErikGartner/dTree.
+  and the original lives at https://github.com/ErikGartner/dTree. Upstream has not been updated
+  since 2019, so this copy is effectively the one being maintained. That also pins the front end
+  to d3 v4, which is what dTree is written against.
 - Admin errors are shown on screen to signed-in users, since shared hosting often hides them and writes no log.
 - The stats page reads `data.json` directly, so it covers the Miller tree only.
