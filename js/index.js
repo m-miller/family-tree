@@ -25,6 +25,33 @@
 		return '<br /><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + label + '</a>';
 	}
 
+	// ---------- relationships ----------
+
+	var family = null;      // the index built from the tree data
+	var relateTo = null;    // the person picked as the other end, if any
+
+	function personFor(extra) {
+		return family && extra ? family.byExtra.get(extra) || null : null;
+	}
+
+	/** The line shown in the panel: either the relationship, or the button. */
+	function relationshipHtml(extra) {
+		var person = personFor(extra);
+		if (!person || !window.FamilyRelations) return '';
+
+		if (!relateTo) {
+			return '<hr /><button type="button" id="relate">How is this person related to\u2026</button>';
+		}
+		if (relateTo === person) {
+			return '<hr /><span class="relation">Pick another person to compare with '
+				+ escapeHtml(person.name) + '.</span>'
+				+ '<br /><button type="button" id="relate-clear">Cancel</button>';
+		}
+		return '<hr /><span class="relation">'
+			+ escapeHtml(window.FamilyRelations.describe(person, relateTo))
+			+ '</span><br /><button type="button" id="relate-clear">Clear</button>';
+	}
+
 	// ---------- info panel ----------
 
 	function buildInfoHtml(name, extra) {
@@ -62,7 +89,31 @@
 			part(e.buried, '<br />Buried: ') +
 			externalLink(e.buried_link, 'Cemetery Map') +
 			externalLink(e.buried_grave, 'Find a Grave') +
-			part(e.notes, '<hr />Notes: ');
+			part(e.notes, '<hr />Notes: ') +
+			relationshipHtml(extra);
+	}
+
+	function handlePanelButtons(info, extra) {
+		var relate = info.querySelector('#relate');
+		if (relate) {
+			relate.addEventListener('click', function (event) {
+				event.stopPropagation();
+				relateTo = personFor(extra);
+				info.classList.add('relating');
+				info.innerHTML = buildInfoHtml(info.dataset.name || '', extra);
+				handlePanelButtons(info, extra);
+			});
+		}
+		var clear = info.querySelector('#relate-clear');
+		if (clear) {
+			clear.addEventListener('click', function (event) {
+				event.stopPropagation();
+				relateTo = null;
+				info.classList.remove('relating');
+				info.innerHTML = buildInfoHtml(info.dataset.name || '', extra);
+				handlePanelButtons(info, extra);
+			});
+		}
 	}
 
 	// `nodeEl` is the clicked foreignObject; its child div carries the sex class
@@ -80,8 +131,10 @@
 			info = document.createElement('div');
 			document.getElementById('graph').appendChild(info);
 		}
-		info.className = 'info ' + colourClass;
+		info.className = 'info ' + colourClass + (relateTo ? ' relating' : '');
+		info.dataset.name = name;
 		info.innerHTML = buildInfoHtml(name, extra);
+		handlePanelButtons(info, extra);
 	}
 
 	// ---------- node text ----------
@@ -313,6 +366,9 @@
 				}
 			}
 		});
+		if (window.FamilyRelations) {
+			family = window.FamilyRelations.index(treeData);
+		}
 		addSpouseStyles();
 		addZoomControls(tree);
 		addCardTilt(document.getElementById('graph'));

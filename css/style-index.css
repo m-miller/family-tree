@@ -65,7 +65,9 @@ svg {
 }
 foreignObject {
 	cursor: pointer;
-	height: 60px;
+	/* No height here: in SVG2 this is a CSS property and would override the
+	   height dTree sets on each card, which is what the connector lines are
+	   positioned against. Setting it puts every marriage line off centre. */
 }
 foreignObject > div {
 	border-radius: 5px;
@@ -78,6 +80,7 @@ foreignObject > div {
 div > p {
 	font-size: .75rem;
 	letter-spacing: -0.3px;
+	margin: 0.25rem 0;
 }
 #head-info {
 	color: white;
@@ -195,4 +198,21 @@ div > p {
 	box-shadow: 0 6px 14px rgba(0, 0, 0, .28);
 	position: relative;
 	z-index: 2;
+}
+/* relationship line and buttons in the info panel */
+.info .relation {
+	font-style: italic;
+}
+.info button {
+	margin-top: .4rem;
+	padding: .2rem .5rem;
+	font: inherit;
+	font-size: .8rem;
+	cursor: pointer;
+	border: 1px solid #444;
+	border-radius: 4px;
+	background: rgba(255, 255, 255, .85);
+}
+.info button:hover {
+	background: #fff;
 }

@@ -13,7 +13,17 @@
 	document.addEventListener('click', function (event) {
 		var info = document.querySelector('.info');
 		if (!info) return;
-		if (event.target.closest('#close') || !isInsidePanelOrNode(event.target)) {
+
+		// the × always closes it
+		if (event.target.closest('#close')) {
+			info.remove();
+			return;
+		}
+		// while a relationship is being compared, the panel stays put so you
+		// can pan and zoom your way to the other person
+		if (info.classList.contains('relating')) return;
+
+		if (!isInsidePanelOrNode(event.target)) {
 			info.remove();
 		}
 	});
