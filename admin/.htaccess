@@ -6,6 +6,6 @@
 
 # Block the setup page once the first account exists.
 # Uncomment after setup if you want belt and braces.
-# <Files "setup.php">
-#	Require all denied
-# </Files>
+<Files "setup.php">
+	Require all denied
+</Files>

@@ -77,6 +77,7 @@ a.cancel { margin-left: 1rem; }
 form.narrow { max-width: 22rem; }
 form.inline { display: inline-block; margin: 0 1rem 1rem 0; }
 fieldset { border: 1px solid var(--line); margin: 1rem 0; padding: .5rem 1rem 1rem; }
+textarea { max-width: 370px; min-width: 370px; min-height: 5rem; }
 legend { font-weight: bold; }
 form.person fieldset { width: 29%; }
 form.marriage { border: 1px solid var(--line); padding: .5rem 1rem; margin-bottom: 1rem; }

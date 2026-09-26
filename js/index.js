@@ -110,14 +110,90 @@
 
 	// ---------- zoom controls ----------
 
+	// Panning speed while an arrow is held: starts gentle, winds up to full
+	// speed after about a second, in pixels per frame.
+	var PAN_START = 4;
+	var PAN_TOP = 34;
+	var PAN_RAMP = 1000;
+	var PAN_GLIDE = 0.88;   // how much speed is kept each frame after release
+
+	// Laid out as a pad: up on top, left and right either side of the
+	// "back to the start" button, down below, then the zoom controls.
 	var CONTROLS = [
-		{ label: 'Zoom in', icon: 'M8 3v10M3 8h10', action: function (tree) { tree.zoomBy(1.3); } },
-		{ label: 'Zoom out', icon: 'M3 8h10', action: function (tree) { tree.zoomBy(1 / 1.3); } },
-		{ label: 'Fit the whole tree', icon: 'M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4',
+		{ label: 'Scroll up (hold to go further)', icon: 'M3 10l5-5 5 5', hold: [0, 1], at: [2, 1] },
+		{ label: 'Scroll left (hold to go further)', icon: 'M10 3L5 8l5 5', hold: [1, 0], at: [1, 2] },
+		{ label: 'Back to the starting view', icon: 'M8 2v12M2 8h12', circle: true, at: [2, 2],
+		  action: function (tree) { tree.resetZoom(); } },
+		{ label: 'Scroll right (hold to go further)', icon: 'M6 3l5 5-5 5', hold: [-1, 0], at: [3, 2] },
+		{ label: 'Scroll down (hold to go further)', icon: 'M3 6l5 5 5-5', hold: [0, -1], at: [2, 3] },
+		{ label: 'Zoom out', icon: 'M3 8h10', at: [1, 4],
+		  action: function (tree) { tree.zoomBy(1 / 1.3); } },
+		{ label: 'Fit the whole tree', icon: 'M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4', at: [2, 4],
 		  action: function (tree) { tree.zoomToFit(); } },
-		{ label: 'Back to the starting view', icon: 'M8 2v12M2 8h12', circle: true,
-		  action: function (tree) { tree.resetZoom(); } }
+		{ label: 'Zoom in', icon: 'M8 3v10M3 8h10', at: [3, 4],
+		  action: function (tree) { tree.zoomBy(1.3); } }
 	];
+
+	/**
+	 * An arrow that pans while held. The longer it is held the faster it
+	 * goes, so a tap nudges the view and a long press travels across the tree.
+	 * `direction` is [x, y]: 1 moves the view left or up, -1 right or down.
+	 */
+	function addHoldToPan(button, tree, direction) {
+		var frame = null;
+		var startedAt = 0;
+		var speed = 0;
+		var gliding = false;
+
+		function step() {
+			var held = Date.now() - startedAt;
+			var ramp = Math.min(1, held / PAN_RAMP);
+			speed = PAN_START + (PAN_TOP - PAN_START) * ramp * ramp;
+			tree.panBy(direction[0] * speed, direction[1] * speed);
+			frame = requestAnimationFrame(step);
+		}
+
+		// after the button is let go, carry on and slow to a halt
+		function glide() {
+			speed *= PAN_GLIDE;
+			if (speed < 0.4) {
+				frame = null;
+				gliding = false;
+				return;
+			}
+			tree.panBy(direction[0] * speed, direction[1] * speed);
+			frame = requestAnimationFrame(glide);
+		}
+
+		function start(event) {
+			if (frame !== null && !gliding) return;
+			if (frame !== null) cancelAnimationFrame(frame);   // cut a glide short
+			event.preventDefault();
+			gliding = false;
+			startedAt = Date.now();
+			step();
+		}
+
+		function stop() {
+			if (frame === null || gliding) return;
+			cancelAnimationFrame(frame);
+			gliding = true;
+			frame = requestAnimationFrame(glide);
+		}
+
+		button.addEventListener('mousedown', start);
+		button.addEventListener('touchstart', start, { passive: false });
+		// however the press ends, and wherever the pointer went
+		['mouseup', 'mouseleave', 'touchend', 'touchcancel', 'blur'].forEach(function (name) {
+			button.addEventListener(name, stop);
+		});
+		window.addEventListener('mouseup', stop);
+
+		// keyboard: space or enter arrives as a click
+		button.addEventListener('click', function () {
+			if (frame === null) tree.panBy(direction[0] * 60, direction[1] * 60);
+		});
+	}
 
 	function addZoomControls(tree) {
 		var bar = document.createElement('div');
@@ -129,12 +205,21 @@
 			button.classList = "nav-icon"
 			button.title = control.label;
 			button.setAttribute('aria-label', control.label);
+			button.style.gridColumn = control.at[0];
+			button.style.gridRow = control.at[1];
+			if (control.at[1] === 4) {
+				button.classList.add('below-pad');
+			}
 			button.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
 				+ (control.circle ? '<circle cx="8" cy="8" r="5"></circle>' : '')
 				+ '<path d="' + control.icon + '"></path></svg>';
-			button.addEventListener('click', function () {
-				control.action(tree);
-			});
+			if (control.hold) {
+				addHoldToPan(button, tree, control.hold);
+			} else {
+				button.addEventListener('click', function () {
+					control.action(tree);
+				});
+			}
 			bar.appendChild(button);
 		});
 
@@ -143,8 +228,8 @@
 
 	// ---------- cards lean towards the pointer ----------
 
-	var TILT = 8;          // degrees at the very edge of a card
-	var LIFT = 1.04;        // how much it grows while under the pointer
+	var TILT = 12;          // degrees at the very edge of a card
+	var LIFT = 1.05;        // how much it grows while under the pointer
 	var FOLLOW = 'transform 80ms linear';
 	var SETTLE = 'transform 550ms cubic-bezier(.34, 1.56, .64, 1)';
 
@@ -200,6 +285,10 @@
 		});
 	}
 
+	// Gap between one generation's cards and the next, on top of the card
+	// height itself. dTree's own default is 25.
+	var GENERATION_GAP = 60;
+
 	// ---------- init ----------
 
 	d3.json(thefile, function (error, treeData) {
@@ -218,7 +307,10 @@
 				nodeClick: function (name, extra) {
 					showInfo(this, name, extra);
 				},
-				textRenderer: renderNodeText
+				textRenderer: renderNodeText,
+				nodeHeightSeperation: function (nodeWidth, nodeMaxHeight) {
+					return nodeMaxHeight + GENERATION_GAP;
+				}
 			}
 		});
 		addSpouseStyles();

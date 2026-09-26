@@ -89,13 +89,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         // filter links with no parents to prevent empty nodes
         .filter(function (l) {
           return !l.target.data.noParent;
-        }).append('path').attr('class', opts.styles.linage).attr('d', this._elbow)
-        // added: name the two nodes a link joins, so other code can find them
-        .attr('data-source', function (l) {
-          return l.source.data.id;
-        }).attr('data-target', function (l) {
-          return l.target.data.id;
-        });
+        }).append('path').attr('class', opts.styles.linage).attr('d', this._elbow);
 
         var nodes = this.g.selectAll('.node').data(treenodes.descendants()).enter();
 
@@ -111,13 +105,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
           return d.number > 0 ? opts.styles.nthMarriage : opts.styles.marriage;
         })
-        .attr('d', _.bind(this._siblingLine, this))
-        // added: as above, for the lines joining spouses
-        .attr('data-source', function (d) {
-          return d.source.id;
-        }).attr('data-target', function (d) {
-          return d.target.id;
-        });
+        .attr('d', _.bind(this._siblingLine, this));
 
         // Create the node rectangles.
         nodes.append('foreignObject').filter(function (d) {
@@ -341,6 +329,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         });
         document.body.removeChild(tmpSvg);
 
+        // added: give every card the tallest card's height, so spouses and
+        // siblings line up instead of each being centred on its row. Rows are
+        // already spaced by maxHeight, so this costs no extra height.
+        _.map(nodes, function (n) {
+          if (!n.data.hidden) {
+            n.cHeight = maxHeight;
+          }
+        });
+
         return [width, maxHeight];
       }
     }, {
@@ -471,6 +468,15 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           treeBuilder.svg.transition().duration(duration).call(treeBuilder.zoom.transform, d3.zoomIdentity.translate(opts.width / 2, opts.margin.top).scale(1));
         },
         zoomTo: _zoomTo,
+        // added: shift the view by a number of screen pixels, keeping d3's
+        // own zoom state in sync. Used by the pan arrows.
+        panBy: function panBy(dx, dy) {
+          var node = treeBuilder.svg.node();
+          var current = d3.zoomTransform(node);
+          var transform = d3.zoomIdentity.translate(current.x + dx, current.y + dy).scale(current.k);
+
+          treeBuilder.svg.call(treeBuilder.zoom.transform, transform);
+        },
         // added: step the zoom in or out, keeping d3's own zoom state in sync.
         // Anchored near the top of the view, where the root sits, rather than
         // the middle of the viewport - otherwise zooming out drags the tree
@@ -504,8 +510,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           var groupBounds = treeBuilder.g.node().getBBox();
           var width = groupBounds.width;
           var height = groupBounds.height;
-          var fullWidth = treeBuilder.svg.node().clientWidth;
-          var fullHeight = treeBuilder.svg.node().clientHeight;
+          // the viewBox, not the element's pixel size: the bounding box above
+          // is in user units, and mixing the two pushes the tree off centre
+          var fullWidth = opts.width + opts.margin.left + opts.margin.right;
+          var fullHeight = opts.height + opts.margin.top + opts.margin.bottom;
           var scale = 0.95 / Math.max(width / fullWidth, height / fullHeight);
 
           treeBuilder.svg.transition().duration(duration).call(treeBuilder.zoom.transform, d3.zoomIdentity.translate(fullWidth / 2 - scale * (groupBounds.x + width / 2), fullHeight / 2 - scale * (groupBounds.y + height / 2)).scale(scale));
