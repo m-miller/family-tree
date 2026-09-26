@@ -5,7 +5,7 @@ Online d3 dTree visualization of one side of the family tree. Mostly a [d3](http
 
 The public pages are static: HTML, CSS and plain JavaScript reading a JSON file. Behind them sit a MySQL database and a small PHP admin app for editing, which writes the JSON files out again.
 
-<img width="1640" height="740" alt="Screenshot 2026-09-26 at 08 19 19" src="https://github.com/user-attachments/assets/4d6e367b-5735-4bca-96ce-37c849b26f0b" />
+<img width="1649" height="728" alt="Screenshot 2026-09-25 at 18 56 22" src="https://github.com/user-attachments/assets/5cf00a8e-42b1-4320-b82c-be955f7baf5a" />
 
 ## Pages
 
@@ -94,6 +94,11 @@ dTree draws a tree, not a graph, so each person appears exactly once. The admin 
 
 ## Notes
 
-- `js/dTree.js` is modified from upstream: rounded connectors and `spouse-N` classes. Adds the ability to show multiple marriages.
+- `js/dTree.js` is modified from upstream: rounded connectors and `spouse-N` classes. Adds the
+  ability to show multiple marriages, uniform card heights, and zoom and pan methods for the
+  on-screen controls. The header of that file lists every difference; it has diverged enough that
+  a new upstream release cannot simply be dropped in.
+- dTree is by Erik Gärtner, MIT licensed. The licence is kept alongside it in `js/dTree.LICENSE`,
+  and the original lives at https://github.com/ErikGartner/dTree.
 - Admin errors are shown on screen to signed-in users, since shared hosting often hides them and writes no log.
 - The stats page reads `data.json` directly, so it covers the Miller tree only.

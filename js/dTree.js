@@ -1,3 +1,31 @@
+/**
+ * dTree, modified for milleronic.com.
+ *
+ * Based on ErikGartner/dTree (https://github.com/ErikGartner/dTree), MIT
+ * licensed. This copy has diverged from upstream, so a new release cannot be
+ * dropped in over it - the changes below would have to be merged by hand.
+ *
+ * What differs from upstream:
+ *
+ *  - Connector elbows are drawn with rounded corners (7px radius) instead of
+ *    square ones.
+ *  - Spouses after the first get a `spouse-N` class, drawn with a
+ *    progressively darker left border, plus an `nthMarriage` link style.
+ *  - `hideMarriageNodes` defaults to false.
+ *  - Every card is given the height of the tallest card, so spouses and
+ *    siblings line up along a row rather than each being centred on it.
+ *  - `zoomBy(factor)` steps the zoom, anchored near the root rather than the
+ *    middle of the viewport, for the zoom buttons.
+ *  - `panBy(dx, dy)` shifts the view by a number of pixels, for the pan
+ *    arrows, keeping d3's own zoom state in sync.
+ *  - `zoomToFit` measures the viewBox rather than the element's pixel size;
+ *    mixing the two pushed the tree off centre on large windows.
+ *  - Link paths carry `data-source` and `data-target` naming the nodes they
+ *    join.
+ *
+ * Each change is marked with a comment where it appears.
+ */
+
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
@@ -664,4 +692,3 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
   return dTree;
 });
-//# sourceMappingURL=dTree.js.map
