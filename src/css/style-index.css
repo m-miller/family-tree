@@ -16,10 +16,7 @@ h1 {
 #graph:active {
 	cursor: grabbing;
 }
-#graph svg {
-	display: block;
-	width: 100%;
-}
+
 .nodeText {
 	text-align: center;
 }
