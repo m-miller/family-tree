@@ -92,13 +92,15 @@ div > p {
 	top: 0;
 	z-index: 3;
 	background-color: black;
-	margin: 0 0 1rem 1rem;
+}
+#head-info p {
+	margin: 0 0 0 1rem;
 }
 #head-info img {
 	width: 64px;
     position: relative;
     top: 32px;
-    margin: 0 1rem 1rem 0;
+    margin: 0 1rem 1rem 1rem;
 }
 #head-info a {
 	text-decoration-style: underline;
