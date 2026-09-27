@@ -19,7 +19,6 @@ h1 {
 #graph svg {
 	display: block;
 	width: 100%;
-	height: calc(100vh - 140px);   /* whatever the header actually needs */
 }
 .nodeText {
 	text-align: center;
