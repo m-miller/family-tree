@@ -11,7 +11,7 @@ hosts the editor.
 - **PHP to Node and Express**, with the admin pages as EJS templates.
 - **MySQL to PostgreSQL.** Same four tables; identity columns instead of `AUTO_INCREMENT`, a check
   constraint instead of `ENUM`, and a trigger for `updated_at`.
-- **No more rebuild step.** The old version wrote `data.json` to disk and tracked whether the file
+- **No more rebuild step.** The PHP version wrote `data.json` to disk and tracked whether the file
   was stale. Render's disk does not survive a restart, so `/data.json` and `/horne.json` are built
   from the database per request instead, with a short cache. The rebuild button, the staleness
   warning and the `changed_at`/`rebuilt_at` columns are all gone.
