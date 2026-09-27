@@ -19,10 +19,10 @@ const express = require('express');
 const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
 
-const db = require('./lib/db');
-const tree = require('./lib/tree');
-const admin = require('./lib/admin-routes');
-const { requireLogin, csrf } = require('./lib/auth');
+const db = require('./db');
+const tree = require('./tree');
+const admin = require('./adminRoutes');
+const { requireLogin, csrf } = require('./auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -40,7 +40,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(session({
 	store: new PgSession({ pool: db.pool, tableName: 'session' }),
-	secret: process.env.SESSION_SECRET || 'change-me-in-the-environment',
+	secret: process.env.SESSION_SECRET || 'change-me-in-the-environment-boo',
 	resave: false,
 	saveUninitialized: false,
 	cookie: {
