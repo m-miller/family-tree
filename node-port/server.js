@@ -19,14 +19,20 @@ const express = require('express');
 const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
 
-const db = require('./db');
-const tree = require('./tree');
-const admin = require('./adminRoutes');
-const { requireLogin, csrf } = require('./auth');
+const db = require('./lib/db');
+const tree = require('./lib/tree');
+const admin = require('./lib/admin-routes');
+const { requireLogin, csrf } = require('./lib/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SITE = path.join(__dirname, '..', 'src');
+const SITE = path.join(__dirname, 'src');
+
+// Render (like most hosts) terminates TLS at a proxy and forwards plain
+// HTTP. Without this, Express thinks the connection is insecure and refuses
+// to send the session cookie, which shows up as "your session expired" on
+// every sign-in attempt.
+app.set('trust proxy', 1);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -34,7 +40,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(session({
 	store: new PgSession({ pool: db.pool, tableName: 'session' }),
-	secret: process.env.SESSION_SECRET || 'change-me-in-the-environment-boo',
+	secret: process.env.SESSION_SECRET || 'change-me-in-the-environment',
 	resave: false,
 	saveUninitialized: false,
 	cookie: {
