@@ -26,7 +26,7 @@ const { requireLogin, csrf } = require('./auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SITE = path.join(__dirname, 'src');
+const SITE = path.join(__dirname, '..', 'src');
 
 // Render (like most hosts) terminates TLS at a proxy and forwards plain
 // HTTP. Without this, Express thinks the connection is insecure and refuses
