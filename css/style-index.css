@@ -2,7 +2,9 @@ body {
 	font: 1rem sans-serif;
 	background-color: black;
 }
+
 h1 {
+	padding-top: .5rem;
 	color: white;
 }
 #graph {
@@ -13,6 +15,11 @@ h1 {
 }
 #graph:active {
 	cursor: grabbing;
+}
+#graph svg {
+	display: block;
+	width: 100%;
+	height: calc(100vh - 140px);   /* whatever the header actually needs */
 }
 .nodeText {
 	text-align: center;
@@ -84,6 +91,11 @@ div > p {
 }
 #head-info {
 	color: white;
+	position: sticky;
+	top: 0;
+	z-index: 3;
+	background-color: black;
+	margin-top: 0;
 }
 #head-info a {
 	text-decoration-style: underline;
@@ -215,4 +227,8 @@ div > p {
 }
 .info button:hover {
 	background: #fff;
+}
+
+.info .children {
+	font-style: italic;
 }
