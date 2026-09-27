@@ -5,7 +5,8 @@
   "description": "Family tree site: a static d3/dTree chart, with an editor backed by PostgreSQL.",
   "main": "server.js",
 "scripts": {
-  "start": "node --env-file=.env server.js",
+  "start": "node server.js",
+  "dev": "node --env-file=.env server.js",
   "import": "node --env-file=.env importJson.js"
 },
   "engines": { "node": ">=18" },
