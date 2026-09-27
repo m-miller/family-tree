@@ -2,7 +2,17 @@ body {
 	font: 1rem sans-serif;
 	background-color: black;
 }
+
+h1,
+#head-info {
+	position: sticky;
+	top: 0;
+	z-index: 3;
+	background-color: black;   /* so the chart can't show through */
+	margin-top: 0;
+}
 h1 {
+	padding-top: .5rem;
 	color: white;
 }
 #graph {
