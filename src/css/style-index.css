@@ -160,8 +160,9 @@ div > p {
 	margin-top: 10px;
 }
 .zoom-controls button {
-	width: 34px;
-	height: 34px;
+	width: 28px;
+	height: 28px;
+	margin: 2px;
 	padding: 0;
 	display: flex;
 	align-items: center;
