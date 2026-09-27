@@ -94,7 +94,7 @@ div > p {
 	background-color: black;
 }
 #head-info p {
-	margin: 0 0 0 1rem;
+	margin: 1rem 0 1rem 1rem;
 }
 #head-info img {
 	width: 64px;
