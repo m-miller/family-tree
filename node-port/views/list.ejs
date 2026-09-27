@@ -1,0 +1,84 @@
+<%- include('layout-head') %>
+<%
+	// links that keep whatever filters are already on
+	function url(changes) {
+		const params = Object.assign({
+			tree: treeId || null,
+			q: search || null,
+			sort: sort !== 'name' ? sort : null,
+			dir: dir === 'DESC' ? 'desc' : null,
+			letter: letter || null
+		}, changes);
+		const parts = Object.entries(params)
+			.filter(function (pair) { return pair[1] !== null && pair[1] !== undefined && pair[1] !== ''; })
+			.map(function (pair) { return encodeURIComponent(pair[0]) + '=' + encodeURIComponent(pair[1]); });
+		return '/admin' + (parts.length ? '?' + parts.join('&') : '');
+	}
+	function sortLink(column, label) {
+		const isCurrent = column === sort;
+		const nextDir = (isCurrent && dir === 'ASC') ? 'desc' : 'asc';
+		const arrow = isCurrent ? (dir === 'ASC' ? ' \u25B2' : ' \u25BC') : '';
+		return '<a class="sort' + (isCurrent ? ' active' : '') + '" href="'
+			+ url({ sort: column === 'name' ? null : column, dir: nextDir === 'asc' ? null : 'desc' })
+			+ '">' + label + arrow + '</a>';
+	}
+	const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+	if (counts['#']) letters.push('#');
+%>
+
+<form method="get" action="/admin" class="inline">
+	<input type="hidden" name="letter" value="<%= letter %>">
+	<label class="inline-label">Tree
+		<select name="tree" onchange="this.form.submit()">
+			<option value="0">All</option>
+			<% trees.forEach(function (t) { %>
+				<option value="<%= t.id %>" <%= treeId === t.id ? 'selected' : '' %>><%= t.title %></option>
+			<% }); %>
+		</select>
+	</label>
+	<label class="inline-label">Search
+		<input type="search" name="q" value="<%= search %>" placeholder="name">
+	</label>
+	<button type="submit">Go</button>
+</form>
+
+<nav class="letters">
+	<a class="letter nav-btn<%= letter ? '' : ' active' %>" href="<%= url({ letter: null }) %>">All</a>
+	<% letters.forEach(function (l) { %>
+		<% if (counts[l]) { %>
+			<a class="letter nav-btn<%= letter === l ? ' active' : '' %>" href="<%= url({ letter: l }) %>"><%= l %></a>
+		<% } else { %>
+			<span class="letter nav-btn is-empty"><%= l %></span>
+		<% } %>
+	<% }); %>
+</nav>
+
+<p class="count"><%= total %> people<%= letter ? ' with surnames beginning ' + letter : '' %><%= total > 500 ? ' (showing the first 500)' : '' %></p>
+
+<table class="people">
+	<thead>
+		<tr>
+			<td><%- sortLink('name', 'Name') %></td>
+			<td>Tree</td>
+			<td><%- sortLink('born', 'Born') %></td>
+			<td><%- sortLink('died', 'Died') %></td>
+			<td></td>
+		</tr>
+	</thead>
+	<tbody>
+		<% people.forEach(function (p) { %>
+		<tr>
+			<td>
+				<a href="/admin/person/<%= p.id %>"><%= p.name %></a>
+				<% if (p.adopted) { %><span class="tag">adopted</span><% } %>
+				<% if (p.is_placeholder) { %><span class="tag">placeholder</span><% } %>
+			</td>
+			<td><%= p.tree_slug %></td>
+			<td><%= p.birth_date_text %></td>
+			<td><%= p.death_date_text %></td>
+			<td><a href="/admin/person/<%= p.id %>">Edit</a></td>
+		</tr>
+		<% }); %>
+	</tbody>
+</table>
+<%- include('layout-foot') %>

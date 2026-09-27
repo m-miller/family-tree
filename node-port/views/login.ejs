@@ -1,0 +1,9 @@
+<%- include('layout-head') %>
+<% if (error) { %><p class="flash error"><%= error %></p><% } %>
+<form method="post" action="/admin/login" class="narrow">
+	<input type="hidden" name="csrf" value="<%= csrfToken %>">
+	<label>Username<input type="text" name="username" autocomplete="username" autofocus required></label>
+	<label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+	<button type="submit">Sign in</button>
+</form>
+<%- include('layout-foot') %>

@@ -1,0 +1,20 @@
+{
+  "name": "family-tree",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Family tree site: a static d3/dTree chart, with an editor backed by PostgreSQL.",
+  "main": "server.js",
+"scripts": {
+  "start": "node --env-file=.env server.js",
+  "import": "node --env-file=.env importJson.js"
+},
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "connect-pg-simple": "^9.0.1",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "pg": "^8.11.5"
+  }
+}

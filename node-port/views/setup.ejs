@@ -1,0 +1,14 @@
+<%- include('layout-head') %>
+<% if (closed) { %>
+	<p>An account already exists, so setup is closed. <a href="/admin/login">Sign in</a>.</p>
+<% } else { %>
+	<% errors.forEach(function (e) { %><p class="flash error"><%= e %></p><% }); %>
+	<form method="post" action="/admin/setup" class="narrow">
+		<input type="hidden" name="csrf" value="<%= csrfToken %>">
+		<label>Username<input type="text" name="username" autocomplete="username" required></label>
+		<label>Password<input type="password" name="password" autocomplete="new-password" required></label>
+		<label>Repeat the password<input type="password" name="confirm" autocomplete="new-password" required></label>
+		<button type="submit">Create account</button>
+	</form>
+<% } %>
+<%- include('layout-foot') %>

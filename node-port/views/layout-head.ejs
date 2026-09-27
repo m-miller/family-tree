@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= title %> &middot; Family Tree Admin</title>
+<link rel="stylesheet" href="/admin.css">
+<% if (typeof needsDatepicker !== 'undefined' && needsDatepicker) { %>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/css/datepicker.min.css">
+	<script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script>
+	<script src="/date-fields.js"></script>
+<% } %>
+</head>
+<body>
+<% if (user) { %>
+<nav class="topbar">
+	<a href="/admin">People</a>
+	<a href="/admin/person/new">Add a person</a>
+	<a href="/">View the tree</a>
+	<span class="spacer"></span>
+	<span class="who">Signed in as <%= user.username %></span>
+	<form method="post" action="/admin/logout" class="inline">
+		<input type="hidden" name="csrf" value="<%= csrfToken %>">
+		<button type="submit" class="linkish">Sign out</button>
+	</form>
+</nav>
+<% } %>
+<main>
+<h1><%= title %></h1>
+<% flashes.forEach(function (f) { %>
+	<p class="flash <%= f.type %>"><%= f.message %></p>
+<% }); %>
