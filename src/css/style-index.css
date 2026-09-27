@@ -156,9 +156,9 @@ div > p {
 
 /* zoom controls, bottom right of the tree */
 .zoom-controls {
-	position: absolute;
+	position: fixed;
 	left: 20px;
-	top: 20px;
+	top: 200px;
 	display: grid;
 	grid-template-columns: repeat(3, auto);
 	justify-items: center;
