@@ -52,6 +52,40 @@
 			+ '</span><br /><button type="button" id="relate-clear">Clear</button>';
 	}
 
+	var NUMBER_WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight',
+		'nine', 'ten', 'eleven', 'twelve'];
+
+	function inWords(n) {
+		return NUMBER_WORDS[n] || String(n);
+	}
+
+	/** "Had four sons and three daughters." */
+	function childrenHtml(extra) {
+		var person = personFor(extra);
+		if (!person || !person.children.length) return '';
+
+		var sons = 0, daughters = 0, unknown = 0;
+		person.children.forEach(function (child) {
+			// "8 unnamed children" is one node standing for eight people
+			var standsFor = /^(\d+)\s+unnamed\b/i.exec(child.name);
+			if (standsFor) { unknown += parseInt(standsFor[1], 10); return; }
+			if (child.sex === 'man') sons++;
+			else if (child.sex === 'woman') daughters++;
+			else unknown++;
+		});
+
+		var parts = [];
+		if (sons) parts.push(inWords(sons) + (sons === 1 ? ' son' : ' sons'));
+		if (daughters) parts.push(inWords(daughters) + (daughters === 1 ? ' daughter' : ' daughters'));
+		if (unknown) parts.push(inWords(unknown) +
+			(unknown === 1 ? ' child of unrecorded sex' : ' children of unrecorded sex'));
+		if (!parts.length) return '';
+
+		var list = parts.length === 1 ? parts[0]
+			: parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1];
+		return '<hr /><span class="children">Had ' + escapeHtml(list) + '.</span>';
+	}
+
 	// ---------- info panel ----------
 
 	function buildInfoHtml(name, extra) {
@@ -90,6 +124,7 @@
 			externalLink(e.buried_link, 'Cemetery Map') +
 			externalLink(e.buried_grave, 'Find a Grave') +
 			part(e.notes, '<hr />Notes: ') +
+			childrenHtml(extra) +
 			relationshipHtml(extra);
 	}
 
