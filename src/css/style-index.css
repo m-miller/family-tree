@@ -92,6 +92,7 @@ div > p {
 	top: 0;
 	z-index: 3;
 	background-color: black;
+	padding-bottom: 0.5rem;
 }
 #head-info p {
 	margin: 1rem 0 1rem 1rem;
