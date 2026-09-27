@@ -1,5 +1,4 @@
-<% var needsDatepicker = true; %>
-<%- include('layout-head') %>
+<%- include('layout-head', { needsDatepicker: true }) %>
 <%
 	const p = person || {
 		name: '', sex: 'man', adopted: false, is_placeholder: false, linked_tree: '',
