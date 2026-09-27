@@ -392,6 +392,7 @@
 	// Gap between one generation's cards and the next, on top of the card
 	// height itself. dTree's own default is 25.
 	var GENERATION_GAP = 60;
+	var CARD_SEPARATION = 85; 
 
 	// ---------- init ----------
 
@@ -407,6 +408,7 @@
 			marriageNodeSize: 3,
 			height: 800,
 			width: 1200,
+			nodeSeperation: CARD_SEPARATION,
 			callbacks: {
 				nodeClick: function (name, extra) {
 					showInfo(this, name, extra);
