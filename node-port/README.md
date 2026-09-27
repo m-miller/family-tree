@@ -66,16 +66,16 @@ values come from the environment. Free Postgres plans have expired in the past, 
 ## Layout
 
     server.js          routes: the site, the tree JSON, the admin
-    lib/env.js         reads .env when there is one
-    lib/db.js          the connection pool
-    lib/tree.js        dates, building the tree JSON, the structural guards
-    lib/auth.js        sessions, CSRF, bcrypt
-    lib/admin-routes.js the editor
+    env.js         reads .env when there is one
+    db.js          the connection pool
+    tree.js        dates, building the tree JSON, the structural guards
+    auth.js        sessions, CSRF, bcrypt
+    adminRoutes.js the editor
     views/             admin pages (EJS)
     public/            admin.css and date-fields.js
     src/               the public site, served as static files
-    sql/schema.sql     PostgreSQL schema
-    tools/import-json.js  load the tree JSON into an empty database
+    schema.sql     PostgreSQL schema
+    importJson.js  load the tree JSON into an empty database
 
 ## The public site
 
