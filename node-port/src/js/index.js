@@ -300,7 +300,13 @@
 	}
 
 	function addZoomControls(tree) {
+		
 		var bar = document.createElement('div');
+		bar.appendChild(colourPicker('man', 1));
+		bar.appendChild(colourPicker('woman', 3));
+
+		document.getElementById('graph').appendChild(bar);
+		
 		bar.className = 'zoom-controls';
 
 		CONTROLS.forEach(function (control) {
@@ -388,7 +394,61 @@
 			hovered = null;
 		});
 	}
+	// ---------- card colours ----------
 
+	// The colours live in CSS variables, so a change repaints every card at
+	// once, and are remembered per browser.
+	var COLOUR_KEYS = {
+		man: { variable: '--man-colour', fallback: '#d4d4d4', label: 'Colour for men' },
+		woman: { variable: '--woman-colour', fallback: '#91ee91', label: 'Colour for women' }
+	};
+	var COLOUR_STORE = 'familyTreeCardColours';
+
+	function savedColours() {
+		try {
+			return JSON.parse(window.localStorage.getItem(COLOUR_STORE)) || {};
+		} catch (err) {
+			return {};   // private browsing, or nothing saved yet
+		}
+	}
+
+	function applyColour(which, value) {
+		document.documentElement.style.setProperty(COLOUR_KEYS[which].variable, value);
+	}
+
+	function rememberColour(which, value) {
+		var all = savedColours();
+		all[which] = value;
+		try {
+			window.localStorage.setItem(COLOUR_STORE, JSON.stringify(all));
+		} catch (err) {
+			// nothing to do: the colour still applies for this visit
+		}
+	}
+
+	/** A colour input, sized and placed like the buttons above it. */
+	function colourPicker(which, column) {
+		var settings = COLOUR_KEYS[which];
+		var saved = savedColours()[which];
+		if (saved) applyColour(which, saved);
+
+		var input = document.createElement('input');
+		input.type = 'color';
+		input.className = 'colour-picker';
+		input.value = saved || settings.fallback;
+		input.title = settings.label;
+		input.setAttribute('aria-label', settings.label);
+		input.style.gridColumn = column;
+		input.style.gridRow = 5;
+
+		input.addEventListener('input', function () {
+			applyColour(which, input.value);
+		});
+		input.addEventListener('change', function () {
+			rememberColour(which, input.value);
+		});
+		return input;
+	}
 	// Gap between one generation's cards and the next, on top of the card
 	// height itself. dTree's own default is 25.
 	var GENERATION_GAP = 60;

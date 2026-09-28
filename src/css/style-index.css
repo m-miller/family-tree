@@ -1,3 +1,8 @@
+:root {
+	--man-colour: hsl(0, 0%, 83%);
+	--woman-colour: hsl(120, 73%, 75%);
+}
+
 body {
 	font: 1rem sans-serif;
 	background-color: #222;
@@ -39,20 +44,12 @@ h1 {
 	stroke-width: 1px;
 	stroke-dasharray: 3,3;
 }
-.man {
-	background-color: hsl(0, 0%, 83%);
-	border: 1px solid black;
-}
-.man:hover {
-	background-color: hsl(0, 0%, 63%);
-}
-.woman {
-	background-color: hsl(120, 73%, 75%);
-	border: 1px solid black;
-}
-.woman:hover {
-	background-color: hsl(120, 73%, 55%);
-}
+.man        { background-color: var(--man-colour); }
+.man:hover  { background-color: color-mix(in srgb, var(--man-colour) 90%, black); }
+.woman      { background-color: var(--woman-colour); }
+.woman:hover{ background-color: color-mix(in srgb, var(--woman-colour) 90%, black); }
+.info-man   { background-color: var(--man-colour); }
+.info-woman { background-color: var(--woman-colour); }
 .unknown {
 	background-color: hsl(210, 45%, 85%);
 	border: 1px solid black;
@@ -143,13 +140,7 @@ div > p {
 	line-height: .6;
 	text-align: center;
 }
-/* info panel colours (match the node hover colours) */
-.info-man {
-	background-color: hsl(0, 6%, 80%);
-}
-.info-woman {
-	background-color: hsl(120, 77%, 82%);
-}
+
 .info-unknown {
 	background-color: hsl(210, 45%, 65%);
 }
@@ -199,6 +190,19 @@ div > p {
 	stroke-linecap: round;
 	fill: none;
 }
+.zoom-controls .colour-picker {
+	width: 34px;
+	height: 34px;
+	padding: 2px;
+	margin-top: 10px;
+	border: 1px solid #777;
+	border-radius: 4px;
+	background: rgba(255, 255, 255, .9);
+	cursor: pointer;
+}
+.zoom-controls .colour-picker::-webkit-color-swatch-wrapper { padding: 0; }
+.zoom-controls .colour-picker::-webkit-color-swatch { border: none; border-radius: 2px; }
+.zoom-controls .colour-picker::-moz-color-swatch { border: none; border-radius: 2px; }
 .source {
 	font-size: .8rem;
 	font-style: italic;
