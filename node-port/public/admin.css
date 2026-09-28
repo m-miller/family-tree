@@ -79,6 +79,7 @@ button:hover {
 	background-color: #222;
 }
 button.danger { border-color: var(--error); color: var(--error); }
+button.danger:hover { border-color: var(--error); color: white; background-color: var(--error);}
 a.cancel { margin-left: 1rem; }
 
 .person { display: flex; flex-direction: row; flex-wrap: wrap; gap: 1rem; }
