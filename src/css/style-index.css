@@ -12,6 +12,8 @@ h1 {
 	padding-top: .5rem;
 	color: white;
 	display: inline;
+	position: relative;
+	top: -1rem;
 }
 #graph {
 	position: relative;
@@ -97,8 +99,7 @@ div > p {
 .site-icon {
 	width: 64px; 
 	height: 64px;
-	vertical-align: middle;
-	margin-right: .5rem;
+	margin: 1rem 1rem 0 1rem;
 	border: none;
 }
 #head-info a {
