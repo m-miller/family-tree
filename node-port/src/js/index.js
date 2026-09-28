@@ -302,11 +302,6 @@
 	function addZoomControls(tree) {
 		
 		var bar = document.createElement('div');
-		bar.appendChild(colourPicker('man', 1));
-		bar.appendChild(colourPicker('woman', 3));
-
-		document.getElementById('graph').appendChild(bar);
-		
 		bar.className = 'zoom-controls';
 
 		CONTROLS.forEach(function (control) {
@@ -332,7 +327,9 @@
 			}
 			bar.appendChild(button);
 		});
-
+		
+		bar.appendChild(colourPicker('man', 1));
+		bar.appendChild(colourPicker('woman', 3));
 		document.getElementById('graph').appendChild(bar);
 	}
 
