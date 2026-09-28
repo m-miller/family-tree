@@ -6,7 +6,6 @@ body {
 	font-size: .85rem;
 	margin: 0;
 	color: #222;
-	background: #f6f6f6;
 } 
 
 a {
@@ -42,12 +41,9 @@ nav.topbar a { color: #222; }
 nav .spacer { flex: 1; }
 nav .who { opacity: .75;  color: #222 }
 main {
-	max-width: 80rem;
-	width: 80rem;
 	margin: 1rem auto;
 	padding: 1rem 1.5rem 3rem;
 	background: white;
-	border: 1px solid var(--line);
 }
 h1 { font-size: 1.3rem; }
 h2 { font-size: 1.05rem; margin-top: 2rem; }
