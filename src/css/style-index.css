@@ -88,7 +88,7 @@ div > p {
 	position: sticky;
 	top: 0;
 	z-index: 3;
-	background-color: black;
+	background-color: #222;
 	padding-bottom: 0.5rem;
 }
 #head-info p {
@@ -99,6 +99,7 @@ div > p {
 	height: 64px;
 	vertical-align: middle;
 	margin-right: .5rem;
+	border: none;
 }
 #head-info a {
 	text-decoration-style: underline;
