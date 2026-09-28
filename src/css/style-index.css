@@ -44,9 +44,9 @@ h1 {
 	stroke-width: 1px;
 	stroke-dasharray: 3,3;
 }
-.man        { background-color: var(--man-colour); }
+.man        { background-color: var(--man-colour); border: 1px solid #222; }
 .man:hover  { background-color: color-mix(in srgb, var(--man-colour) 90%, black); }
-.woman      { background-color: var(--woman-colour); }
+.woman      { background-color: var(--woman-colour); border: 1px solid #222; }
 .woman:hover{ background-color: color-mix(in srgb, var(--woman-colour) 90%, black); }
 .info-man   { background-color: var(--man-colour); }
 .info-woman { background-color: var(--woman-colour); }
