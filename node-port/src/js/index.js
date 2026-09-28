@@ -329,6 +329,7 @@
 		});
 		
 		bar.appendChild(colourPicker('man', 1));
+		bar.appendChild(colourReset(2));
 		bar.appendChild(colourPicker('woman', 3));
 		document.getElementById('graph').appendChild(bar);
 	}
@@ -423,6 +424,33 @@
 		}
 	}
 
+	/** Puts both colours back to the ones the site ships with. */
+	function colourReset(column) {
+		var button = document.createElement('button');
+		button.type = 'button';
+		button.className = 'nav-icon colour-reset';
+		button.title = 'Back to the default colours';
+		button.setAttribute('aria-label', 'Back to the default colours');
+		button.style.gridColumn = column;
+		button.style.gridRow = 5;
+		button.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
+			+ '<path d="M13 8a5 5 0 1 1-1.6-3.7"></path><path d="M13 2v3h-3"></path></svg>';
+
+		button.addEventListener('click', function () {
+			Object.keys(COLOUR_KEYS).forEach(function (which) {
+				var settings = COLOUR_KEYS[which];
+				applyColour(which, settings.fallback);
+				if (settings.input) settings.input.value = settings.fallback;
+			});
+			try {
+				window.localStorage.removeItem(COLOUR_STORE);
+			} catch (err) {
+				// nothing to do
+			}
+		});
+		return button;
+	}
+
 	/** A colour input, sized and placed like the buttons above it. */
 	function colourPicker(which, column) {
 		var settings = COLOUR_KEYS[which];
@@ -444,6 +472,7 @@
 		input.addEventListener('change', function () {
 			rememberColour(which, input.value);
 		});
+		settings.input = input;
 		return input;
 	}
 	// Gap between one generation's cards and the next, on top of the card

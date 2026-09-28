@@ -191,13 +191,13 @@ div > p {
 	fill: none;
 }
 .zoom-controls .colour-picker {
-	width: 34px;
-	height: 34px;
+	width: 30px;
+	height: 30px;
 	padding: 2px;
 	margin-top: 10px;
 	border: 1px solid #777;
 	border-radius: 4px;
-	background: rgba(255, 255, 255, .9);
+	background: rgba(255, 255, 255, 1);
 	cursor: pointer;
 }
 .zoom-controls .colour-picker::-webkit-color-swatch-wrapper { padding: 0; }
@@ -207,6 +207,9 @@ div > p {
 	font-size: .8rem;
 	font-style: italic;
 	opacity: .85;
+}
+.zoom-controls .colour-reset {
+	margin-top: 10px;
 }
 
 /* A foreignObject clips whatever it holds to its own box, which would slice
