@@ -108,7 +108,7 @@ table.people tr:hover {
 	color: white;
 	background-color: #222;
 }
-table.people tr a:hover{
+table.people tr:hover a {
 	color: white;
 }
 .count { color: #666; }
