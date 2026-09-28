@@ -177,12 +177,12 @@ div > p {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: rgba(255, 255, 255, .9);
+	background: rgba(255, 255, 255, 1);
 	border: none;
 	cursor: pointer;
 }
-.zoom-controls button:hover {
-	background: #fff;
+.zoom-controls svg:hover {
+	stroke: #1c1c95;
 }
 .zoom-controls button:focus-visible {
 	outline: 2px solid #045FB4;
