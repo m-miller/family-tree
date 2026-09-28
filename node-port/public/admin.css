@@ -85,7 +85,7 @@ form.inline { display: inline-block; margin: 0 1rem 1rem 0; }
 fieldset { border: 1px solid var(--line); margin: 1rem 0; padding: .5rem 1rem 1rem; }
 textarea { max-width: 370px; min-width: 370px; min-height: 5rem; }
 legend { font-weight: bold; }
-form.person fieldset { width: 29%; }
+form.person fieldset { width: 20%; }
 form.marriage { border: 1px solid var(--line); padding: .5rem 1rem; margin-bottom: 1rem; }
 
 .flash { padding: .5rem .8rem; border-left: 4px solid #777; background: #f0f0f0; }
