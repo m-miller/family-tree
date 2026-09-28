@@ -22,7 +22,7 @@ nav {
 	gap: 1rem;
 	align-items: center;
 	padding: .6rem 1rem;
-	color: #fff;
+	color: white;
 }
 
 nav.topbar {
@@ -46,7 +46,7 @@ main {
 	width: 80rem;
 	margin: 1rem auto;
 	padding: 1rem 1.5rem 3rem;
-	background: #fff;
+	background: white;
 	border: 1px solid var(--line);
 }
 h1 { font-size: 1.3rem; }
@@ -109,11 +109,6 @@ table.people thead td { font-weight: bold; border-bottom-width: 2px; }
 	margin-left: .3rem;
 }
 .count { color: #666; }
-
-/* rebuild button and its status note */
-form.rebuild { display: block; margin-bottom: 1rem; }
-form.rebuild.is-stale { padding: .5rem .8rem; border-left: 4px solid var(--warn); background: #fffbe8; }
-.ok-note { color: #2a7; margin-left: .5rem; }
 
 /* sortable column headings in the people list */
 table.people thead a.sort { text-decoration: none; color: inherit; }
@@ -204,7 +199,7 @@ nav.letters .letter {
 	border-radius: 4px;
 	text-decoration: none;
 	color: #222;
-	background: #fff;
+	background: white;
 }
 
 nav.letters a.letter:hover {
@@ -216,11 +211,12 @@ nav.letters a.letter:hover {
 nav.letters .letter.active {
 	background: #333;
 	border-color: #333;
-	color: #fff;
+	color: white;
 }
 
 nav.letters .letter.active:hover {
-	color: #222;
+	color: white;
+	font-weight: bold;
 }
 
 nav.letters .letter.is-empty {
