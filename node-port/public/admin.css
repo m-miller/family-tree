@@ -104,6 +104,13 @@ table.people thead td { font-weight: bold; border-bottom-width: 2px; }
 	padding: 0 .3rem;
 	margin-left: .3rem;
 }
+table.people tr:hover {
+	color: white;
+	background-color: #222;
+}
+table.people tr a:hover{
+	color: white;
+}
 .count { color: #666; }
 
 /* sortable column headings in the people list */
