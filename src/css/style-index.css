@@ -1,6 +1,6 @@
 body {
 	font: 1rem sans-serif;
-	background-color: black;
+	background-color: #222;
 }
 
 h1 {
@@ -182,7 +182,7 @@ div > p {
 	cursor: pointer;
 }
 .zoom-controls button:hover {
-	background: black;
+	background: #222;
 }
 .zoom-controls svg:hover {
 	stroke: white;

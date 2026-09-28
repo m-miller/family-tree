@@ -74,6 +74,10 @@ button {
 	background: #eee;
 	height: 2.5rem;
 }
+button:hover {
+	color: white;
+	background-color: #222;
+}
 button.danger { border-color: var(--error); color: var(--error); }
 a.cancel { margin-left: 1rem; }
 
