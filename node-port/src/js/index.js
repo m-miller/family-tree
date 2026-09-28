@@ -169,7 +169,6 @@
 
 	// `nodeEl` is the clicked foreignObject; its child div carries the sex class
 	function showInfo(nodeEl, name, extra) {
-		console.log(nodeEl);
 		var nodeDiv = nodeEl.querySelector('div');
 		var colourClass = 'info-unknown';
 		if (nodeDiv && nodeDiv.classList.contains('man')) {
