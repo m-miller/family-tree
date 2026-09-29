@@ -1,7 +1,18 @@
 :root {
 	--man-colour: hsl(0, 0%, 83%);
+	--man-colour-text: #111;
+	--man-colour-mix: black;
 	--woman-colour: hsl(120, 73%, 75%);
+	--woman-colour-text: #111;
+	--woman-colour-mix: black;
 }
+
+.man         { background-color: var(--man-colour); color: var(--man-colour-text); border: 1px solid #222; }
+.man:hover   { background-color: color-mix(in srgb, var(--man-colour) 90%, var(--man-colour-mix)); }
+.woman       { background-color: var(--woman-colour); color: var(--woman-colour-text); border: 1px solid #222; }
+.woman:hover { background-color: color-mix(in srgb, var(--woman-colour) 90%, var(--woman-colour-mix)); }
+.info-man    { background-color: var(--man-colour); color: var(--man-colour-text); }
+.info-woman  { background-color: var(--woman-colour); color: var(--woman-colour-text); }
 
 body {
 	font: 1rem sans-serif;
@@ -46,12 +57,7 @@ h1 {
 	stroke-width: 1px;
 	stroke-dasharray: 3,3;
 }
-.man        { background-color: var(--man-colour); border: 1px solid #222; }
-.man:hover  { background-color: color-mix(in srgb, var(--man-colour) 90%, black); }
-.woman      { background-color: var(--woman-colour); border: 1px solid #222; }
-.woman:hover{ background-color: color-mix(in srgb, var(--woman-colour) 90%, black); }
-.info-man   { background-color: var(--man-colour); }
-.info-woman { background-color: var(--woman-colour); }
+
 .unknown {
 	background-color: hsl(210, 45%, 85%);
 	border: 1px solid black;
