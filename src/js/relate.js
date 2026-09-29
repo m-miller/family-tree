@@ -124,6 +124,13 @@
 		return ' ' + n + ' times removed';
 	}
 
+	/** How many parents two people have in common. */
+	function sharedParents(a, b) {
+		return a.parents.filter(function (parent) {
+			return b.parents.indexOf(parent) !== -1;
+		}).length;
+	}
+
 	/**
 	 * Name the blood relationship of `a` to `b` - that is, what a is to b.
 	 * Returns null when they share no ancestor.
@@ -148,8 +155,14 @@
 			if (up === 2) return pick(a.sex, 'grandson', 'granddaughter', 'grandchild');
 			return greats(up - 2) + pick(a.sex, 'grandson', 'granddaughter', 'grandchild');
 		}
-		// same generation from the shared ancestor
-		if (up === 1 && down === 1) return pick(a.sex, 'brother', 'sister', 'sibling');
+		// same generation from the shared ancestor: full siblings share both
+		// parents, half siblings only one
+		if (up === 1 && down === 1) {
+			if (sharedParents(a, b) < 2) {
+				return pick(a.sex, 'half-brother', 'half-sister', 'half-sibling');
+			}
+			return pick(a.sex, 'brother', 'sister', 'sibling');
+		}
 		// a is the sibling of one of b's ancestors: uncle, granduncle, and so on
 		if (up === 1) {
 			var unclePrefix = down === 2 ? '' : (down === 3 ? 'grand' : greats(down - 3) + 'grand');
@@ -186,7 +199,7 @@
 			if (throughOwnMarriage) return;
 			var link = bloodRelation(spouse, b);
 			if (!link) return;
-			if (link === 'brother' || link === 'sister' || link === 'sibling') {
+			if (/^(half-)?(brother|sister|sibling)$/.test(link)) {
 				throughOwnMarriage = pick(a.sex, 'brother-in-law', 'sister-in-law', 'sibling-in-law');
 			} else if (link === 'son' || link === 'daughter' || link === 'child') {
 				throughOwnMarriage = pick(a.sex, 'son-in-law', 'daughter-in-law', 'child-in-law');
@@ -205,7 +218,7 @@
 			if (throughTheirMarriage) return;
 			var link = bloodRelation(a, spouse);
 			if (!link) return;
-			if (link === 'brother' || link === 'sister' || link === 'sibling') {
+			if (/^(half-)?(brother|sister|sibling)$/.test(link)) {
 				throughTheirMarriage = pick(a.sex, 'brother-in-law', 'sister-in-law', 'sibling-in-law');
 			} else if (link === 'father' || link === 'mother' || link === 'parent') {
 				throughTheirMarriage = pick(a.sex, 'father-in-law', 'mother-in-law', 'parent-in-law');

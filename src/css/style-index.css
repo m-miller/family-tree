@@ -1,18 +1,18 @@
 :root {
-	--man-colour: hsl(0, 0%, 83%);
-	--man-colour-text: #111;
-	--man-colour-mix: black;
-	--woman-colour: hsl(120, 73%, 75%);
-	--woman-colour-text: #111;
-	--woman-colour-mix: black;
+	--man-color: hsl(0, 0%, 83%);
+	--man-color-text: #222;
+	--man-color-mix: black;
+	--woman-color: hsl(120, 73%, 75%);
+	--woman-color-text: #222;
+	--woman-color-mix: black;
 }
 
-.man         { background-color: var(--man-colour); color: var(--man-colour-text); border: 1px solid #222; }
-.man:hover   { background-color: color-mix(in srgb, var(--man-colour) 90%, var(--man-colour-mix)); }
-.woman       { background-color: var(--woman-colour); color: var(--woman-colour-text); border: 1px solid #222; }
-.woman:hover { background-color: color-mix(in srgb, var(--woman-colour) 90%, var(--woman-colour-mix)); }
-.info-man    { background-color: var(--man-colour); color: var(--man-colour-text); }
-.info-woman  { background-color: var(--woman-colour); color: var(--woman-colour-text); }
+.man         { background-color: var(--man-color); color: var(--man-color-text); border: 1px solid #222; }
+.man:hover   { background-color: color-mix(in srgb, var(--man-color) 90%, var(--man-color-mix)); }
+.woman       { background-color: var(--woman-color); color: var(--woman-color-text); border: 1px solid #222; }
+.woman:hover { background-color: color-mix(in srgb, var(--woman-color) 90%, var(--woman-color-mix)); }
+.info-man    { background-color: var(--man-color); color: var(--man-color-text); }
+.info-woman  { background-color: var(--woman-color); color: var(--woman-color-text); }
 
 body {
 	font: 1rem sans-serif;
@@ -201,7 +201,7 @@ div > p {
 	stroke-linecap: round;
 	fill: none;
 }
-.zoom-controls .colour-picker {
+.zoom-controls .color-picker {
 	width: 28px;
 	height: 28px;
 	padding: 2px;
@@ -211,15 +211,15 @@ div > p {
 	background: rgba(255, 255, 255, 1);
 	cursor: pointer;
 }
-.zoom-controls .colour-picker::-webkit-color-swatch-wrapper { padding: 0; }
-.zoom-controls .colour-picker::-webkit-color-swatch { border: none; border-radius: 2px; }
-.zoom-controls .colour-picker::-moz-color-swatch { border: none; border-radius: 2px; }
+.zoom-controls .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+.zoom-controls .color-picker::-webkit-color-swatch { border: none; border-radius: 2px; }
+.zoom-controls .color-picker::-moz-color-swatch { border: none; border-radius: 2px; }
 .source {
 	font-size: .8rem;
 	font-style: italic;
 	opacity: .85;
 }
-.zoom-controls .colour-reset {
+.zoom-controls .color-reset {
 	margin-top: 10px;
 }
 

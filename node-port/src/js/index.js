@@ -170,11 +170,11 @@
 	// `nodeEl` is the clicked foreignObject; its child div carries the sex class
 	function showInfo(nodeEl, name, extra) {
 		var nodeDiv = nodeEl.querySelector('div');
-		var colourClass = 'info-unknown';
+		var colorClass = 'info-unknown';
 		if (nodeDiv && nodeDiv.classList.contains('man')) {
-			colourClass = 'info-man';
+			colorClass = 'info-man';
 		} else if (nodeDiv && nodeDiv.classList.contains('woman')) {
-			colourClass = 'info-woman';
+			colorClass = 'info-woman';
 		}
 
 		var info = document.querySelector('.info');
@@ -182,7 +182,7 @@
 			info = document.createElement('div');
 			document.getElementById('graph').appendChild(info);
 		}
-		info.className = 'info ' + colourClass + (relateTo ? ' relating' : '');
+		info.className = 'info ' + colorClass + (relateTo ? ' relating' : '');
 		info.dataset.name = name;
 		info.innerHTML = buildInfoHtml(name, extra);
 		handlePanelButtons(info, extra);
@@ -328,9 +328,9 @@
 			bar.appendChild(button);
 		});
 		
-		bar.appendChild(colourPicker('man', 1));
-		bar.appendChild(colourReset(2));
-		bar.appendChild(colourPicker('woman', 3));
+		bar.appendChild(colorPicker('man', 1));
+		bar.appendChild(colorReset(2));
+		bar.appendChild(colorPicker('woman', 3));
 		document.getElementById('graph').appendChild(bar);
 	}
 
@@ -392,19 +392,19 @@
 			hovered = null;
 		});
 	}
-	// ---------- card colours ----------
+	// ---------- card colors ----------
 
-	// The colours live in CSS variables, so a change repaints every card at
+	// The colors live in CSS variables, so a change repaints every card at
 	// once, and are remembered per browser.
-	var COLOUR_KEYS = {
-		man: { variable: '--man-colour', fallback: '#d4d4d4', label: 'Colour for men' },
-		woman: { variable: '--woman-colour', fallback: '#91ee91', label: 'Colour for women' }
+	var color_KEYS = {
+		man: { variable: '--man-color', fallback: '#d4d4d4', label: 'Color for men' },
+		woman: { variable: '--woman-color', fallback: '#91ee91', label: 'Color for women' }
 	};
-	var COLOUR_STORE = 'familyTreeCardColours';
+	var color_STORE = 'familyTreeCardcolors';
 
-	function savedColours() {
+	function savedcolors() {
 		try {
-			return JSON.parse(window.localStorage.getItem(COLOUR_STORE)) || {};
+			return JSON.parse(window.localStorage.getItem(color_STORE)) || {};
 		} catch (err) {
 			return {};   // private browsing, or nothing saved yet
 		}
@@ -420,8 +420,8 @@
 		return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
 	}
 
-	function applyColour(which, value) {
-		var settings = COLOUR_KEYS[which];
+	function applycolor(which, value) {
+		var settings = color_KEYS[which];
 		var root = document.documentElement.style;
 		root.setProperty(settings.variable, value);
 
@@ -432,36 +432,36 @@
 		root.setProperty(settings.variable + '-mix', dark ? 'white' : 'black');
 	}
 
-	function rememberColour(which, value) {
-		var all = savedColours();
+	function remembercolor(which, value) {
+		var all = savedcolors();
 		all[which] = value;
 		try {
-			window.localStorage.setItem(COLOUR_STORE, JSON.stringify(all));
+			window.localStorage.setItem(color_STORE, JSON.stringify(all));
 		} catch (err) {
-			// nothing to do: the colour still applies for this visit
+			// nothing to do: the color still applies for this visit
 		}
 	}
 
-	/** Puts both colours back to the ones the site ships with. */
-	function colourReset(column) {
+	/** Puts both colors back to the ones the site ships with. */
+	function colorReset(column) {
 		var button = document.createElement('button');
 		button.type = 'button';
-		button.className = 'nav-icon colour-reset';
-		button.title = 'Back to the default colours';
-		button.setAttribute('aria-label', 'Back to the default colours');
+		button.className = 'nav-icon color-reset';
+		button.title = 'Back to the default colors';
+		button.setAttribute('aria-label', 'Back to the default colors');
 		button.style.gridColumn = column;
 		button.style.gridRow = 5;
 		button.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
 			+ '<path d="M13 8a5 5 0 1 1-1.6-3.7"></path><path d="M13 2v3h-3"></path></svg>';
 
 		button.addEventListener('click', function () {
-			Object.keys(COLOUR_KEYS).forEach(function (which) {
-				var settings = COLOUR_KEYS[which];
-				applyColour(which, settings.fallback);
+			Object.keys(color_KEYS).forEach(function (which) {
+				var settings = color_KEYS[which];
+				applycolor(which, settings.fallback);
 				if (settings.input) settings.input.value = settings.fallback;
 			});
 			try {
-				window.localStorage.removeItem(COLOUR_STORE);
+				window.localStorage.removeItem(color_STORE);
 			} catch (err) {
 				// nothing to do
 			}
@@ -469,15 +469,15 @@
 		return button;
 	}
 
-	/** A colour input, sized and placed like the buttons above it. */
-	function colourPicker(which, column) {
-		var settings = COLOUR_KEYS[which];
-		var saved = savedColours()[which];
-		if (saved) applyColour(which, saved);
+	/** A color input, sized and placed like the buttons above it. */
+	function colorPicker(which, column) {
+		var settings = color_KEYS[which];
+		var saved = savedcolors()[which];
+		if (saved) applycolor(which, saved);
 
 		var input = document.createElement('input');
 		input.type = 'color';
-		input.className = 'colour-picker';
+		input.className = 'color-picker';
 		input.value = saved || settings.fallback;
 		input.title = settings.label;
 		input.setAttribute('aria-label', settings.label);
@@ -485,10 +485,10 @@
 		input.style.gridRow = 5;
 
 		input.addEventListener('input', function () {
-			applyColour(which, input.value);
+			applycolor(which, input.value);
 		});
 		input.addEventListener('change', function () {
-			rememberColour(which, input.value);
+			remembercolor(which, input.value);
 		});
 		settings.input = input;
 		return input;
