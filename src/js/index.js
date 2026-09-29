@@ -410,8 +410,26 @@
 		}
 	}
 
+	/** Relative luminance, 0 (black) to 1 (white). */
+	function luminance(hex) {
+		var channels = [1, 3, 5].map(function (i) {
+			return parseInt(hex.substr(i, 2), 16) / 255;
+		}).map(function (c) {
+			return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+		});
+		return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+	}
+
 	function applyColour(which, value) {
-		document.documentElement.style.setProperty(COLOUR_KEYS[which].variable, value);
+		var settings = COLOUR_KEYS[which];
+		var root = document.documentElement.style;
+		root.setProperty(settings.variable, value);
+
+		// 0.179 is where white text overtakes black for readability, by the
+		// WCAG contrast formula. Below it, light text and a lighter hover.
+		var dark = luminance(value) < 0.179;
+		root.setProperty(settings.variable + '-text', dark ? '#fff' : '#111');
+		root.setProperty(settings.variable + '-mix', dark ? 'white' : 'black');
 	}
 
 	function rememberColour(which, value) {
