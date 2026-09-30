@@ -334,14 +334,7 @@
 			button.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
 				+ (control.circle ? '<circle cx="8" cy="8" r="5"></circle>' : '')
 				+ '<path d="' + control.icon + '"></path></svg>';
-			if (control.mode) {
-				modeButton = button;
-				button.addEventListener('click', function () {
-					if (mode === 'ancestors') { mode = 'descendants'; draw(); }
-					else if (startPerson) { showAncestorsOf(startPerson); }
-				});
-				updateModeButton();
-			} else if (control.hold) {
+
 			if (control.mode) {
 				modeButton = button;
 				button.addEventListener('click', function () {
@@ -357,7 +350,7 @@
 					control.action(chart || tree);
 				});
 			}
-		}
+
 			bar.appendChild(button);
 		});
 		
