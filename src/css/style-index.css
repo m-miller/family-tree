@@ -274,13 +274,15 @@ div > p {
 	color: #222; 
 	transition: transform 1s ease, color 1s ease;
 }
-.zoom-controls svg:not(.icon-filled) {
+.zoom-controls svg {
 	border-style: solid;
 	border-width: 1px;
 }
+
 .zoom-controls button.active > svg.icon-filled {
 	color: white;
 	transform: rotate(180deg);
+	border: none;
 }
 .zoom-controls svg.icon-filled:hover {
 	color: white;
