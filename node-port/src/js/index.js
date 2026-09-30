@@ -251,9 +251,12 @@
 		  action: function (tree) { tree.zoomToFit(); } },
 		{ label: 'Zoom in', icon: 'M8 3v10M3 8h10', at: [3, 4],
 		  action: function (tree) { tree.zoomBy(1.3); } },
-		{ label: 'Switch chart',
-		  icon: 'M5.5 1.5h5v4h-5zM1 10.5h5v4h-5zM10 10.5h5v4h-5zM8 5.5v2M3.5 9.5v-2h9v2',
-		  at: [2, 6], mode: true }	];
+		{ label: 'Switch chart', at: [2, 6], mode: true,
+		  markup: '<g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round">'
+			+ '<path d="M32 24v8"/><path d="M16 44V32h32v12"/></g>'
+			+ '<rect x="20" y="8" width="24" height="17" rx="5" fill="var(--man-color)"/>'
+			+ '<rect x="5" y="43" width="22" height="16" rx="5" fill="var(--woman-color)"/>'
+			+ '<rect x="37" y="43" width="22" height="16" rx="5" fill="var(--man-color)"/>' }
 
 	/**
 	 * An arrow that pans while held. The longer it is held the faster it
@@ -332,9 +335,12 @@
 			if (control.at[1] === 4) {
 				button.classList.add('below-pad');
 			}
-			button.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
-				+ (control.circle ? '<circle cx="8" cy="8" r="5"></circle>' : '')
-				+ '<path d="' + control.icon + '"></path></svg>';
+			button.innerHTML = control.markup
+				? '<svg viewBox="0 0 64 64" class="icon-filled" aria-hidden="true" focusable="false">'
+					+ control.markup + '</svg>'
+				: '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
+					+ (control.circle ? '<circle cx="8" cy="8" r="5"></circle>' : '')
+					+ '<path d="' + control.icon + '"></path></svg>';
 
 			if (control.mode) {
 				modeButton = button;

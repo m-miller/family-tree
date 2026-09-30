@@ -272,3 +272,7 @@ div > p {
 .zoom-controls button.active {
 	background: #333;
 }
+.zoom-controls svg.icon-filled {
+	stroke: none;
+	color: #222;          /* the connector lines, via currentColor */
+}
