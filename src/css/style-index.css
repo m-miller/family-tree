@@ -272,7 +272,7 @@ div > p {
 .zoom-controls svg.icon-filled {
 	stroke: none;
 	color: #222; 
-	transition: transform 1s ease, color 1s ease, border-width 0.3s ease
+	transition: transform 1s ease, color 1s ease, border-width 0.1s ease
 }
 .zoom-controls svg {
 	border-style: solid;
@@ -281,8 +281,8 @@ div > p {
 
 .zoom-controls button.active > svg.icon-filled {
 	color: white;
+	border-color: #222;
 	transform: rotate(180deg);
-	border: none;
 }
 .zoom-controls svg.icon-filled:hover {
 	color: white;
