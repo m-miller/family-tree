@@ -251,8 +251,7 @@
 		  action: function (tree) { tree.zoomToFit(); } },
 		{ label: 'Zoom in', icon: 'M8 3v10M3 8h10', at: [3, 4],
 		  action: function (tree) { tree.zoomBy(1.3); } },
-		{ label: 'Switch chart', icon: 'M4 10l4-4 4 4M8 6v7', at: [2, 5], mode: true }
-
+		{ label: 'Switch chart', icon: 'M4 10l4-4 4 4M8 6v7', at: [2, 6], mode: true }
 	];
 
 	/**
