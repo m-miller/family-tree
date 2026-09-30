@@ -183,21 +183,12 @@ div > p {
 .zoom-controls button:hover {
 	background: #222;
 }
-.zoom-controls svg:hover {
-	stroke: white;
-}
+
 .zoom-controls button:focus-visible {
 	outline: 2px solid #045FB4;
 	outline-offset: 1px;
 }
-.zoom-controls svg {
-	width: 26px;
-	height: 26px;
-	stroke: #222;
-	stroke-width: 1.6;
-	stroke-linecap: round;
-	fill: none;
-}
+
 .zoom-controls .color-picker {
 	width: 28px;
 	height: 28px;
@@ -269,23 +260,28 @@ div > p {
 .zoom-controls button.active {
 	background: #222;
 }
+.zoom-controls svg {
+	width: 26px;
+	height: 26px;
+	stroke: #222;
+	stroke-width: 1.6;
+	stroke-linecap: round;
+	fill: none;
+	border: 1px solid #222;      /* explicit, not currentColor */
+}
+
 .zoom-controls svg.icon-filled {
 	stroke: none;
-	color: #222; 
+	color: #222;
 	transition: transform 1s ease, color 1s ease, border-color .15s ease;
 }
-.zoom-controls svg {
-	border-style: solid;
-	border-width: 1px;
+
+.zoom-controls svg.icon-filled:hover {
+	color: white;                 /* border stays #222 now */
 }
 
 .zoom-controls button.active > svg.icon-filled {
 	color: white;
 	border-color: transparent;
 	transform: rotate(180deg);
-	transition: transform 1s ease, color 1s ease, border-color .15s ease 1s;
-
-}
-.zoom-controls svg.icon-filled:hover {
-	color: white;
 }
