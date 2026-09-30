@@ -561,7 +561,7 @@
 		var panel = graph.querySelector('.info');
 		if (panel) panel.remove();
 		if (chart && chart.destroy) chart.destroy();
-		var svg = graph.querySelector('svg');
+		var svg = graph.querySelector(':scope > svg');
 		if (svg) svg.remove();
 
 		if (mode === 'ancestors' && startPerson) {
