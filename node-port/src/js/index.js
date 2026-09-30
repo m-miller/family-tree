@@ -343,11 +343,19 @@
 				});
 				updateModeButton();
 			} else if (control.hold) {
-			if (control.hold) {
-				addHoldToPan(button, tree, control.hold);
+			if (control.mode) {
+				modeButton = button;
+				button.addEventListener('click', function () {
+					if (mode === 'ancestors') { mode = 'descendants'; draw(); }
+					else if (startPerson) { showAncestorsOf(startPerson); }
+				});
+				updateModeButton();
+			} else if (control.hold) {
+				addHoldToPan(button, { panBy: function (dx, dy) { (chart || tree).panBy(dx, dy); } },
+					control.hold);
 			} else {
 				button.addEventListener('click', function () {
-					control.action(tree);
+					control.action(chart || tree);
 				});
 			}
 			bar.appendChild(button);
