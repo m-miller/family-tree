@@ -33,6 +33,13 @@
 	function personFor(extra) {
 		return family && extra ? family.byExtra.get(extra) || null : null;
 	}
+	/** Offers the ancestor chart for whoever's panel this is. */
+	function ancestorsHtml(extra) {
+		var person = personFor(extra);
+		if (!person || !window.Pedigree) return '';
+		if (!person.parents.length) return '';
+		return '<hr /><button type="button" id="show-ancestors">Show this person\u2019s ancestors</button>';
+	}
 
 	/** The line shown in the panel: either the relationship, or the button. */
 	function relationshipHtml(extra) {
@@ -141,10 +148,18 @@
 			externalLink(e.buried_grave, 'Find a Grave') +
 			part(e.notes, '<hr />Notes: ') +
 			childrenHtml(extra) +
+			ancestorsHtml(extra) +
 			relationshipHtml(extra);
 	}
 
 	function handlePanelButtons(info, extra) {
+		var ancestors = info.querySelector('#show-ancestors');
+		if (ancestors) {
+			ancestors.addEventListener('click', function (event) {
+				event.stopPropagation();
+				showAncestorsOf(personFor(extra));
+			});
+		}
 		var relate = info.querySelector('#relate');
 		if (relate) {
 			relate.addEventListener('click', function (event) {
@@ -235,7 +250,9 @@
 		{ label: 'Fit the whole tree', icon: 'M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4', at: [2, 4],
 		  action: function (tree) { tree.zoomToFit(); } },
 		{ label: 'Zoom in', icon: 'M8 3v10M3 8h10', at: [3, 4],
-		  action: function (tree) { tree.zoomBy(1.3); } }
+		  action: function (tree) { tree.zoomBy(1.3); } },
+		{ label: 'Switch chart', icon: 'M4 10l4-4 4 4M8 6v7', at: [2, 5], mode: true }
+
 	];
 
 	/**
@@ -318,6 +335,14 @@
 			button.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
 				+ (control.circle ? '<circle cx="8" cy="8" r="5"></circle>' : '')
 				+ '<path d="' + control.icon + '"></path></svg>';
+			if (control.mode) {
+				modeButton = button;
+				button.addEventListener('click', function () {
+					if (mode === 'ancestors') { mode = 'descendants'; draw(); }
+					else if (startPerson) { showAncestorsOf(startPerson); }
+				});
+				updateModeButton();
+			} else if (control.hold) {
 			if (control.hold) {
 				addHoldToPan(button, tree, control.hold);
 			} else {
@@ -331,6 +356,7 @@
 		bar.appendChild(colorPicker('man', 1));
 		bar.appendChild(colorReset(2));
 		bar.appendChild(colorPicker('woman', 3));
+		
 		document.getElementById('graph').appendChild(bar);
 	}
 
@@ -493,6 +519,75 @@
 		settings.input = input;
 		return input;
 	}
+
+		// Which chart is on screen, and who it starts from. Both call showInfo,
+	// so the panel behaves the same either way.
+	var mode = 'descendants';
+	var startPerson = null;
+	var chart = null;
+	var treeData = null;
+	var modeButton = null;
+
+	function drawDescendants() {
+		chart = dTree.init(treeData, {
+			target: '#graph',
+			debug: false,
+			hideMarriageNodes: true,
+			marriageNodeSize: 3,
+			height: 800,
+			width: 1200,
+			callbacks: {
+				nodeClick: function (name, extra) { showInfo(this, name, extra); },
+				textRenderer: renderNodeText,
+				nodeHeightSeperation: function (nodeWidth, nodeMaxHeight) {
+					return nodeMaxHeight + GENERATION_GAP;
+				}
+			}
+		});
+		addSpouseStyles();
+	}
+
+	function drawAncestors(person) {
+		chart = window.Pedigree.render(document.getElementById('graph'), person, {
+			textRenderer: renderNodeText,
+			onNodeClick: function (name, extra) { showInfo(this, name, extra); }
+		});
+	}
+
+	/** Swap charts, keeping the controls pointed at whichever is showing. */
+	function draw() {
+		var graph = document.getElementById('graph');
+		var panel = graph.querySelector('.info');
+		if (panel) panel.remove();
+		if (chart && chart.destroy) chart.destroy();
+		var svg = graph.querySelector('svg');
+		if (svg) svg.remove();
+
+		if (mode === 'ancestors' && startPerson) {
+			drawAncestors(startPerson);
+		} else {
+			mode = 'descendants';
+			drawDescendants();
+		}
+		updateModeButton();
+	}
+
+	function updateModeButton() {
+		if (!modeButton) return;
+		var toAncestors = mode === 'descendants';
+		var label = toAncestors ? 'Show ancestors of the person you pick' : 'Back to the whole tree';
+		modeButton.title = label;
+		modeButton.setAttribute('aria-label', label);
+		modeButton.classList.toggle('active', !toAncestors);
+		modeButton.disabled = toAncestors && !startPerson;
+	}
+
+	function showAncestorsOf(person) {
+		startPerson = person;
+		mode = 'ancestors';
+		draw();
+	}
+
 	// Gap between one generation's cards and the next, on top of the card
 	// height itself. dTree's own default is 25.
 	var GENERATION_GAP = 60;

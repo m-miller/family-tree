@@ -260,3 +260,15 @@ div > p {
 .info .children {
 	font-style: italic;
 }
+
+/* the ancestor chart */
+.pedigree { display: block; }
+.pedigree .linage {
+	fill: none;
+	stroke: #000;
+	stroke-width: 2px;
+}
+/* the chart toggle, in the pad under the colour pickers */
+.zoom-controls button.active {
+	background: #333;
+}
