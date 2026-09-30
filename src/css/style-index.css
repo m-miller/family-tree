@@ -184,6 +184,8 @@ div > p {
 	background: #222;
 }
 
+
+
 .zoom-controls button:focus-visible {
 	outline: 2px solid #045FB4;
 	outline-offset: 1px;
@@ -267,7 +269,11 @@ div > p {
 	stroke-width: 1.6;
 	stroke-linecap: round;
 	fill: none;
-	border: 1px solid #222;      /* explicit, not currentColor */
+	border: 1px solid #222;
+}
+
+.zoom-controls svg:hover {
+	stroke: white;
 }
 
 .zoom-controls svg.icon-filled {
@@ -277,7 +283,7 @@ div > p {
 }
 
 .zoom-controls svg.icon-filled:hover {
-	color: white;                 /* border stays #222 now */
+	color: white;
 }
 
 .zoom-controls button.active > svg.icon-filled {
