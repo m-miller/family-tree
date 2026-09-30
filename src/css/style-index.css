@@ -276,9 +276,10 @@ div > p {
 	stroke: none;
 	color: #222; 
 }
-.zoom-controls svg.icon-filled:active {
+button.nav-icon:active svg.icon-filled {
 	color: white;
 }
 .zoom-controls svg.icon-filled:hover {
 	color: white;
+	border: 1px solid #222;
 }
