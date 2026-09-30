@@ -251,8 +251,9 @@
 		  action: function (tree) { tree.zoomToFit(); } },
 		{ label: 'Zoom in', icon: 'M8 3v10M3 8h10', at: [3, 4],
 		  action: function (tree) { tree.zoomBy(1.3); } },
-		{ label: 'Switch chart', icon: 'M4 10l4-4 4 4M8 6v7', at: [2, 6], mode: true }
-	];
+		{ label: 'Switch chart',
+		  icon: 'M5.5 1.5h5v4h-5zM1 10.5h5v4h-5zM10 10.5h5v4h-5zM8 5.5v2M3.5 9.5v-2h9v2',
+		  at: [2, 6], mode: true }	];
 
 	/**
 	 * An arrow that pans while held. The longer it is held the faster it
