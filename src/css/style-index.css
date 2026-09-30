@@ -273,6 +273,7 @@ div > p {
 	stroke: none;
 	color: #222; 
 	transition: transform 1s ease, color 1s ease;
+	border: none;
 }
 .zoom-controls svg {
 	border-style: solid;
