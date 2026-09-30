@@ -257,6 +257,7 @@
 			+ '<rect x="20" y="8" width="24" height="17" rx="5" fill="var(--man-color)"/>'
 			+ '<rect x="5" y="43" width="22" height="16" rx="5" fill="var(--woman-color)"/>'
 			+ '<rect x="37" y="43" width="22" height="16" rx="5" fill="var(--man-color)"/>' }
+	]
 
 	/**
 	 * An arrow that pans while held. The longer it is held the faster it
