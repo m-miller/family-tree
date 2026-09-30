@@ -278,6 +278,7 @@ div > p {
 }
 .zoom-controls button.active > svg.icon-filled {
 	color: white;
+	transform: rotate(180deg);
 }
 .zoom-controls svg.icon-filled:hover {
 	color: white;
