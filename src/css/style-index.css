@@ -284,3 +284,7 @@ div > p {
 .zoom-controls svg.icon-filled:hover {
 	color: white;
 }
+.zoom-controls button:has(svg.icon-filled) {
+	background: transparent;
+	border-color: transparent;
+}
