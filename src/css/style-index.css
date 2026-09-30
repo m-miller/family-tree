@@ -69,8 +69,7 @@ h1 {
 	font-style: italic;
 }
 svg {
-	border-style: solid;
-	border-width: 1px;
+border: none;
 }
 foreignObject {
 	cursor: pointer;
@@ -283,8 +282,4 @@ div > p {
 }
 .zoom-controls svg.icon-filled:hover {
 	color: white;
-}
-.zoom-controls button:has(svg.icon-filled) {
-	background: transparent;
-	border-color: transparent;
 }
