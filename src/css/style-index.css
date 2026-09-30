@@ -45,10 +45,10 @@ h1 {
 }
 .marriage {
 	fill: none;
-	stroke: black;
+	stroke: #222;
 }
 .marriageNode {
-	background-color: black;
+	background-color: #222;
 	border-radius: 50%;
 }
 .nthMarriage {
@@ -60,7 +60,7 @@ h1 {
 
 .unknown {
 	background-color: hsl(210, 45%, 85%);
-	border: 1px solid black;
+	border: 1px solid #222;
 }
 .unknown:hover {
 	background-color: hsl(210, 45%, 65%);
@@ -126,7 +126,7 @@ div > p {
 	padding: 1rem;
 	top: 40px;
 	left: 140px;
-	border: 1px solid black;
+	border: 1px solid #222;
 	border-radius: 10px;
 	font-size: .9rem;
 }
@@ -135,14 +135,14 @@ div > p {
 }
 #close {
 	position: absolute;
-	color: black;
+	color: #222;
 	top: -11px;
 	right: -11px;
 	width: 20px;
 	height: 20px;
 	background-color: white;
 	border-radius: 10px;
-	border: 1px solid black;
+	border: 1px solid #222;
 	cursor:pointer;
 	font-size: 1.75rem;
 	line-height: .6;
@@ -196,7 +196,7 @@ div > p {
 	height: 28px;
 	padding: 2px;
 	margin-top: 10px;
-	border: 1px solid #777;
+	border: 1px solid #222;
 	border-radius: 4px;
 	background: rgba(255, 255, 255, 1);
 	cursor: pointer;
@@ -255,7 +255,7 @@ div > p {
 .pedigree { display: block; }
 .pedigree .linage {
 	fill: none;
-	stroke: #000;
+	stroke: #222;
 	stroke-width: 2px;
 }
 /* the chart toggle, in the pad under the colour pickers */
