@@ -272,8 +272,7 @@ div > p {
 .zoom-controls svg.icon-filled {
 	stroke: none;
 	color: #222; 
-	transition: transform 1s ease, color 1s ease;
-	border: none;
+	transition: transform 1s ease, color 1s ease, border-width 0.3s ease
 }
 .zoom-controls svg {
 	border-style: solid;
