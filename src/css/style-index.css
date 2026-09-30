@@ -283,7 +283,7 @@ div > p {
 	color: white;
 	border-color: transparent;
 	transform: rotate(180deg);
-	transition: transform 1s ease, color 1s ease, border-color .15s ease;
+	transition: transform 1s ease, color 1s ease, border-color .15s ease 1s;
 
 }
 .zoom-controls svg.icon-filled:hover {
