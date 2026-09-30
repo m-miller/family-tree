@@ -602,33 +602,17 @@
 
 	// ---------- init ----------
 
-	d3.json(thefile, function (error, treeData) {
+	d3.json(thefile, function (error, data) {
 		if (error) {
 			console.error('Could not load ' + thefile, error);
 			return;
 		}
-		var tree = dTree.init(treeData, {
-			target: '#graph',
-			debug: false,
-			hideMarriageNodes: true,
-			marriageNodeSize: 3,
-			height: 800,
-			width: 1200,
-			callbacks: {
-				nodeClick: function (name, extra) {
-					showInfo(this, name, extra);
-				},
-				textRenderer: renderNodeText,
-				nodeHeightSeperation: function (nodeWidth, nodeMaxHeight) {
-					return nodeMaxHeight + GENERATION_GAP;
-				}
-			}
-		});
 		if (window.FamilyRelations) {
-			family = window.FamilyRelations.index(treeData);
+			family = window.FamilyRelations.index(data);
 		}
-		addSpouseStyles();
-		addZoomControls(tree);
+		treeData = data;
+		drawDescendants();
+		addZoomControls(chart);
 		addCardTilt(document.getElementById('graph'));
 	});
 })();
