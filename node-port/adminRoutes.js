@@ -194,7 +194,14 @@ module.exports = function adminRoutes(invalidateTree) {
 		const isRoot = Boolean(await db.one('SELECT id FROM trees WHERE root_person_id = $1', [id]));
 		const drawn = await treeLib.drawnPeople(person.tree_id);
 
-		return { person, marriages, parentMarriage, candidates, couples, isRoot, drawnHere: drawn.has(id) };
+		// People who could be attached as a parent: in this tree, not this
+		// person, and not already drawn - anyone drawn would appear twice.
+		const unattached = candidates.filter(function (c) {
+			return !drawn.has(c.id);
+		});
+
+		return { person, marriages, parentMarriage, candidates, couples, isRoot,
+			drawnHere: drawn.has(id), unattached };
 	}
 
 	router.get('/person/new', async (req, res, next) => {
@@ -203,7 +210,7 @@ module.exports = function adminRoutes(invalidateTree) {
 			res.render('person', {
 				title: 'Add a person',
 				trees, person: null, marriages: [], parentMarriage: null,
-				candidates: [], couples: [], isRoot: false, drawnHere: false,
+				candidates: [], couples: [], isRoot: false, drawnHere: false, unattached: [],
 				treeId: Number(req.query.tree) || (trees[0] && trees[0].id) || 1
 			});
 		} catch (err) {
@@ -333,6 +340,14 @@ module.exports = function adminRoutes(invalidateTree) {
 	});
 
 	/** Add a whole generation above someone. */
+	/**
+	 * Add a whole generation above someone.
+	 *
+	 * Each parent is either a name to create, or someone already in the tree
+	 * chosen from the dropdown. Choosing existing people is how a line that
+	 * was entered separately gets attached: they are not drawn yet, so no one
+	 * ends up on the chart twice.
+	 */
 	router.post('/person/:id/add-parents', async (req, res, next) => {
 		const id = Number(req.params.id);
 		try {
@@ -341,8 +356,11 @@ module.exports = function adminRoutes(invalidateTree) {
 
 			const fatherName = post(req, 'father_name').replace(/^\*+/, '');
 			const motherName = post(req, 'mother_name').replace(/^\*+/, '');
-			if (!fatherName && !motherName) {
-				flash(req, 'Give at least one parent a name.', 'error');
+			const fatherId = Number(req.body.father_id) || 0;
+			const motherId = Number(req.body.mother_id) || 0;
+
+			if (!fatherName && !motherName && !fatherId && !motherId) {
+				flash(req, 'Name a parent, or choose one already in the tree.', 'error');
 				return res.redirect(`/admin/person/${id}`);
 			}
 			if (await db.one('SELECT id FROM children WHERE child_id = $1', [id])) {
@@ -350,46 +368,97 @@ module.exports = function adminRoutes(invalidateTree) {
 				return res.redirect(`/admin/person/${id}`);
 			}
 
+			// Someone chosen from the dropdown must be in this tree, must not
+			// be the person themselves, and must not already be drawn, or
+			// they would appear twice.
+			const drawn = await treeLib.drawnPeople(person.tree_id);
+			for (const chosen of [fatherId, motherId]) {
+				if (!chosen) continue;
+				if (chosen === id) {
+					flash(req, 'Someone cannot be their own parent.', 'error');
+					return res.redirect(`/admin/person/${id}`);
+				}
+				const row = await db.one('SELECT name, tree_id FROM people WHERE id = $1', [chosen]);
+				if (!row || row.tree_id !== person.tree_id) {
+					flash(req, 'That person is not in the same tree.', 'error');
+					return res.redirect(`/admin/person/${id}`);
+				}
+				if (drawn.has(chosen) && chosen !== person.id) {
+					flash(req, `${row.name} already appears in the tree. Remove their marriage or `
+						+ 'parents first, or they would be drawn twice.', 'error');
+					return res.redirect(`/admin/person/${id}`);
+				}
+			}
+
 			const dateText = post(req, 'married_date_text');
 			const when = treeLib.parseDate(dateText);
-			const wasDrawn = await treeLib.drawnPeople(person.tree_id);
+			const wasDrawn = drawn;
 
 			const newRoot = await db.transaction(async (client) => {
-				const add = async (name, sex) => {
+				// use the chosen person, or create one from the name given
+				const resolve = async (chosenId, name, sex) => {
+					if (chosenId) return chosenId;
 					const row = await client.query(
 						'INSERT INTO people (tree_id, name, sex) VALUES ($1, $2, $3) RETURNING id',
 						[person.tree_id, name || 'Unknown', name ? sex : 'unknown']);
 					return row.rows[0].id;
 				};
-				const fatherId = await add(fatherName, 'man');
-				const motherId = await add(motherName, 'woman');
+				const father = await resolve(fatherId, fatherName, 'man');
+				const mother = await resolve(motherId, motherName, 'woman');
 
-				const marriage = await client.query(
-					`INSERT INTO marriages (tree_id, person_id, spouse_id, ordinal, married_date_text,
-					   married_year, married_month, married_day, married_place)
-					 VALUES ($1,$2,$3,1,$4,$5,$6,$7,$8) RETURNING id`,
-					[person.tree_id, fatherId, motherId, dateText, when.year, when.month, when.day,
-						post(req, 'married_place')]);
+				// they may already be married to each other
+				const existing = await client.query(
+					`SELECT id FROM marriages WHERE (person_id = $1 AND spouse_id = $2)
+					 OR (person_id = $2 AND spouse_id = $1)`, [father, mother]);
+
+				let marriageId;
+				if (existing.rowCount) {
+					marriageId = existing.rows[0].id;
+				} else {
+					const ordinal = await client.query(
+						'SELECT COALESCE(MAX(ordinal), 0) + 1 AS n FROM marriages WHERE person_id = $1',
+						[father]);
+					const inserted = await client.query(
+						`INSERT INTO marriages (tree_id, person_id, spouse_id, ordinal, married_date_text,
+						   married_year, married_month, married_day, married_place)
+						 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+						[person.tree_id, father, mother, ordinal.rows[0].n, dateText,
+							when.year, when.month, when.day, post(req, 'married_place')]);
+					marriageId = inserted.rows[0].id;
+				}
+
+				const position = await client.query(
+					'SELECT COALESCE(MAX(position), 0) + 1 AS n FROM children WHERE marriage_id = $1',
+					[marriageId]);
 				await client.query(
-					'INSERT INTO children (marriage_id, child_id, position) VALUES ($1, $2, 1)',
-					[marriage.rows[0].id, id]);
-				return fatherId;
+					'INSERT INTO children (marriage_id, child_id, position) VALUES ($1, $2, $3)',
+					[marriageId, id, position.rows[0].n]);
+				return father;
 			});
 
 			// A chart starts from one person, so a new top generation becomes
-			// the root and the marriages below it are turned to face it.
-			if (wasDrawn.has(id) || wasDrawn.size === 0) {
+			// the root - unless the father already sits below someone else,
+			// in which case the tree already has a top and we leave it alone.
+			const fatherHasParents = await db.one(
+				'SELECT id FROM children WHERE child_id = $1', [newRoot]);
+			const fatherLabel = fatherName || (await db.one(
+				'SELECT name FROM people WHERE id = $1', [newRoot])).name;
+
+			if ((wasDrawn.has(id) || wasDrawn.size === 0) && !fatherHasParents) {
 				await db.query('UPDATE trees SET root_person_id = $1 WHERE id = $2',
 					[newRoot, person.tree_id]);
 				const flipped = await treeLib.reorientTree(person.tree_id);
-				flash(req, `Added ${fatherName || 'an unnamed father'} and `
-					+ `${motherName || 'an unnamed mother'}. The chart now starts from `
-					+ `${fatherName || 'the new father'}`
+				flash(req, `Parents added. The chart now starts from ${fatherLabel}`
+					+ (flipped ? `, and ${flipped} marriage${flipped === 1 ? ' was' : 's were'} `
+						+ 'turned around to suit' : '') + '.');
+			} else if (fatherHasParents) {
+				// the new parents hang off a line that is already attached
+				const flipped = await treeLib.reorientTree(person.tree_id);
+				flash(req, 'Parents added, joining the line that is already in the tree'
 					+ (flipped ? `, and ${flipped} marriage${flipped === 1 ? ' was' : 's were'} `
 						+ 'turned around to suit' : '') + '.');
 			} else {
-				flash(req, `Added ${fatherName || 'an unnamed father'} and `
-					+ `${motherName || 'an unnamed mother'} as parents.`);
+				flash(req, 'Parents added.');
 			}
 			warnUnparsedDate(req, 'The marriage date', dateText);
 			invalidateTree();

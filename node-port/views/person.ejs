@@ -128,15 +128,36 @@
 	<form method="post" action="/admin/person/<%= person.id %>/add-parents" class="marriage new">
 		<input type="hidden" name="csrf" value="<%= csrfToken %>">
 		<h3>Add parents</h3>
-		<p class="hint">Creates both parents and makes <%= p.name %> their child. Leave a name blank
-			to add an unknown parent you can fill in later.
+		<p class="hint">Makes <%= p.name %> the child of these two. Type a name to create someone, or
+			pick a person already entered but not yet on the chart - which is how a line entered
+			separately gets joined on. Leave both blank for an unknown parent to fill in later.
 			<% if (isRoot || drawnHere) { %>
 				Because <%= p.name %> appears on the chart, the chart will start from the new father
 				afterwards.
 			<% } %>
 		</p>
-		<%- field('Father', 'father_name', '') %>
-		<%- field('Mother', 'mother_name', '') %>
+		<div class="parent-choice">
+			<%- field('Father (new name)', 'father_name', '') %>
+			<label>or someone already in the tree
+				<select name="father_id">
+					<option value="0">nobody yet</option>
+					<% unattached.forEach(function (c) { %>
+						<option value="<%= c.id %>"><%= personLabel(c) %></option>
+					<% }); %>
+				</select>
+			</label>
+		</div>
+		<div class="parent-choice">
+			<%- field('Mother (new name)', 'mother_name', '') %>
+			<label>or someone already in the tree
+				<select name="mother_id">
+					<option value="0">nobody yet</option>
+					<% unattached.forEach(function (c) { %>
+						<option value="<%= c.id %>"><%= personLabel(c) %></option>
+					<% }); %>
+				</select>
+			</label>
+		</div>
 		<%- dateField('Married on', 'married_date_text', '') %>
 		<%- field('Married at', 'married_place', '') %>
 		<button type="submit">Add parents</button>
