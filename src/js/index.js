@@ -358,8 +358,9 @@
 					control.action(chart || tree);
 				});
 			}
+		}
 			bar.appendChild(button);
-		};
+		});
 		
 		bar.appendChild(colorPicker('man', 1));
 		bar.appendChild(colorReset(2));
