@@ -271,6 +271,7 @@ div > p {
 /* the chart toggle, in the pad under the colour pickers */
 .zoom-controls button.active {
 	background: #222;
+	color: white;
 }
 .zoom-controls svg.icon-filled {
 	stroke: none;
