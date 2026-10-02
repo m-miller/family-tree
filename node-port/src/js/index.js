@@ -465,6 +465,7 @@
 		var dark = luminance(value) < 0.179;
 		root.setProperty(settings.variable + '-text', dark ? '#fff' : '#111');
 		root.setProperty(settings.variable + '-mix', dark ? 'white' : 'black');
+		updateFavicon();
 	}
 
 	function remembercolor(which, value) {
@@ -502,6 +503,28 @@
 			}
 		});
 		return button;
+	}
+
+	var favicon = document.getElementById('dynamic-favicon');
+
+	/** Redraw the tab icon in the colours currently chosen. */
+	function updateFavicon() {
+		if (!favicon) return;
+
+		var styles = getComputedStyle(document.documentElement);
+		var man = (styles.getPropertyValue('--man-color') || '#d4d4d4').trim();
+		var woman = (styles.getPropertyValue('--woman-color') || '#91ee91').trim();
+
+		var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+			+ '<rect width="64" height="64" rx="12" fill="#222"/>'
+			+ '<g stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round">'
+			+ '<path d="M32 24v8"/><path d="M16 44V32h32v12"/></g>'
+			+ '<rect x="20" y="8" width="24" height="17" rx="5" fill="' + man + '"/>'
+			+ '<rect x="5" y="43" width="22" height="16" rx="5" fill="' + woman + '"/>'
+			+ '<rect x="37" y="43" width="22" height="16" rx="5" fill="' + man + '"/>'
+			+ '</svg>';
+
+		favicon.href = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
 	}
 
 	/** A color input, sized and placed like the buttons above it. */
