@@ -5,7 +5,7 @@ Online d3 dTree visualization of one side of the family tree. Mostly a [d3](http
 
 The public pages are static: HTML, CSS and plain JavaScript reading a JSON file. Behind them sit a MySQL database and a small PHP admin app for editing, which writes the JSON files out again.
 
-<img width="1640" height="740" alt="Screenshot 2026-09-26 at 08 19 19" src="https://github.com/user-attachments/assets/155ee5ad-1c48-459e-87c7-c75b8ad84b9a" />
+<img width="1532" height="694" alt="Screenshot 2026-10-01 at 21 30 02" src="https://github.com/user-attachments/assets/8f797299-d11b-4487-9ee6-cc4496b4a7ec" />
 
 ## Pages
 
@@ -25,7 +25,7 @@ progressively darker left border, and cards lean towards the pointer as it passe
 A pad of controls sits over the chart: arrows to scroll in each direction, a button to return to the
 starting view, and below them zoom out, fit the whole tree, and zoom in. Holding an arrow picks up
 speed the longer it is held and coasts to a stop when released. The tree can also be dragged and
-zoomed with the mouse as before.
+zoomed with the mouse. The color swatches change the color of the cards, and the loop icon between them reverts to the original colors. Below that the tree icon swaps between the ancestor and tree views for the last person selected.
 
 ### Who is related to whom
 
