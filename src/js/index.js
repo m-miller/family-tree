@@ -505,10 +505,11 @@
 		return button;
 	}
 
-	var favicon = document.getElementById('dynamic-favicon');
+
 
 	/** Redraw the tab icon in the colours currently chosen. */
 	function updateFavicon() {
+		var favicon = document.getElementById('dynamic-favicon');
 		if (!favicon) return;
 
 		var styles = getComputedStyle(document.documentElement);
