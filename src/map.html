@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Places - Miller Family Tree</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+	html, body { height: 100%; margin: 0; }
+	body {
+		display: flex;
+		flex-direction: column;
+		background: #000;
+		color: #fff;
+		font-family: Verdana, Geneva, sans-serif;
+		font-size: .85rem;
+	}
+	header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: .6rem 1.2rem;
+		padding: .6rem 1rem;
+	}
+	header h1 { font-size: 1.1rem; margin: 0; }
+	header a { color: #fff; }
+	header select { font: inherit; padding: .2rem; }
+	#count { opacity: .75; }
+	#map { flex: 1; min-height: 0; }
+
+	.leaflet-popup-content { max-height: 16rem; overflow-y: auto; font-size: .8rem; }
+	.leaflet-popup-content h3 { margin: 0 0 .3rem; font-size: .9rem; }
+	.leaflet-popup-content h4 { margin: .6rem 0 .1rem; font-size: .8rem; }
+	.leaflet-popup-content ul { margin: 0; padding-left: 1.1rem; }
+</style>
+</head>
+<body>
+<header>
+	<h1>Places</h1>
+	<a href="/">Back to the tree</a>
+	<label>Show
+		<select id="filter">
+			<option value="all">everything</option>
+			<option value="born">births</option>
+			<option value="died">deaths</option>
+			<option value="buried">burials</option>
+			<option value="married">marriages</option>
+		</select>
+	</label>
+	<span id="count"></span>
+</header>
+<div id="map"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function () {
+	'use strict';
+
+	var LABELS = { born: 'Born here', married: 'Married here', died: 'Died here', buried: 'Buried here' };
+	var ORDER = ['born', 'married', 'died', 'buried'];
+
+	var map = L.map('map', { worldCopyJump: true }).setView([30, -20], 2);
+	L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 19,
+		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+	}).addTo(map);
+
+	var markers = L.layerGroup().addTo(map);
+	var events = [];
+	var filterBox = document.getElementById('filter');
+	var count = document.getElementById('count');
+
+	function esc(value) {
+		return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+			return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+		});
+	}
+
+	/** One entry per spot on the map, however many events happened there. */
+	function groupByPlace(list) {
+		var spots = {};
+		list.forEach(function (e) {
+			var key = e.lat.toFixed(4) + ',' + e.lng.toFixed(4);
+			if (!spots[key]) spots[key] = { lat: e.lat, lng: e.lng, events: [] };
+			spots[key].events.push(e);
+		});
+		return Object.keys(spots).map(function (key) { return spots[key]; });
+	}
+
+	function popupFor(spot) {
+		// the names typed for a spot can differ; the first one stands for it
+		var title = spot.events.map(function (e) { return e.place; }).filter(Boolean)[0]
+			|| 'Unnamed place';
+		var html = '<h3>' + esc(title) + '</h3>';
+
+		ORDER.forEach(function (kind) {
+			var here = spot.events.filter(function (e) { return e.kind === kind; });
+			if (!here.length) return;
+			html += '<h4>' + LABELS[kind] + '</h4><ul>' + here.map(function (e) {
+				var dated = e.date && !/^unknown$/i.test(e.date);
+				return '<li>' + esc(e.name) + (dated ? ' (' + esc(e.date) + ')' : '') + '</li>';
+			}).join('') + '</ul>';
+		});
+		return html;
+	}
+
+	function draw() {
+		var kind = filterBox.value;
+		var shown = events.filter(function (e) { return kind === 'all' || e.kind === kind; });
+		var spots = groupByPlace(shown);
+
+		markers.clearLayers();
+		spots.forEach(function (spot) {
+			L.circleMarker([spot.lat, spot.lng], {
+				radius: 6 + Math.min(14, Math.sqrt(spot.events.length) * 3),
+				color: '#111',
+				weight: 1,
+				fillColor: '#2e9e4f',
+				fillOpacity: 0.7
+			}).bindPopup(popupFor(spot)).addTo(markers);
+		});
+
+		if (!spots.length) {
+			count.textContent = events.length
+				? 'Nothing of that kind has coordinates yet.'
+				: 'No places have coordinates yet. Add them from a person\u2019s page in the admin.';
+			return;
+		}
+
+		count.textContent = spots.length + (spots.length === 1 ? ' place, ' : ' places, ')
+			+ shown.length + (shown.length === 1 ? ' event' : ' events');
+
+		var points = spots.map(function (spot) { return [spot.lat, spot.lng]; });
+		if (points.length === 1) {
+			map.setView(points[0], 9);
+		} else {
+			map.fitBounds(points, { padding: [40, 40] });
+		}
+	}
+
+	filterBox.addEventListener('change', draw);
+
+	fetch('/places.json')
+		.then(function (response) {
+			if (!response.ok) throw new Error(response.status);
+			return response.json();
+		})
+		.then(function (data) {
+			events = data;
+			draw();
+		})
+		.catch(function () {
+			count.textContent = 'The places could not be loaded.';
+		});
+})();
+</script>
+</body>
+</html>
