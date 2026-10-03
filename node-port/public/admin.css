@@ -321,6 +321,10 @@ fieldset.card { margin-top: 0; }
 	align-items: start;
 }
 
+.trio .card {
+	min-height: 400px;
+}
+
 /* family: parents, marriages, chart */
 .family {
 	display: grid;
