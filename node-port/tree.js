@@ -97,6 +97,7 @@ function extraFor(person, marriage, spouseName) {
 		buried: person.buried,
 		buried_link: person.buried_link,
 		buried_grave: person.buried_grave,
+		burial_source: person.burial_source,
 		notes: person.notes,
 		link: person.linked_tree
 	};

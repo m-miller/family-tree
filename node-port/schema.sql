@@ -60,6 +60,7 @@ CREATE TABLE people (
   buried                text NOT NULL DEFAULT '',
   buried_link           varchar(1000) NOT NULL DEFAULT '',
   buried_grave          varchar(1000) NOT NULL DEFAULT '',
+  burial_source         text NOT NULL DEFAULT '',
   notes                 text NOT NULL DEFAULT '',
   linked_tree           varchar(50)  NOT NULL DEFAULT '',
 

@@ -15,7 +15,7 @@ const PERSON_FIELDS = [
 	'birth_state_province', 'birth_zip_postal_code', 'birth_country', 'birth_source',
 	'deathplace_name', 'death_address1', 'death_address2', 'death_city',
 	'death_state_province', 'death_zip_postal_code', 'death_country', 'death_source',
-	'buried', 'buried_link', 'buried_grave', 'notes', 'linked_tree'
+	'buried', 'buried_link', 'buried_grave', 'burial_source', 'notes', 'linked_tree'
 ];
 
 // Coordinates, filled in by the place lookup. Blank means "not placed yet",

@@ -7,7 +7,7 @@
 		birth_source: '', death_date_text: '', deathplace_name: '', death_address1: '',
 		death_address2: '', death_city: '', death_state_province: '', death_zip_postal_code: '',
 		death_country: '', death_source: '', buried: '', buried_link: '', buried_grave: '', notes: '',
-		birth_lat: '', birth_lng: '', death_lat: '', death_lng: '', burial_lat: '', burial_lng: ''
+		birth_lat: '', birth_lng: '', death_lat: '', death_lng: '', burial_lat: '', burial_lng: '', burial_source: ''
 	};
 	let dateId = 0;
 	function esc(v) {
@@ -151,6 +151,7 @@
 				<%- field('Cemetery map link (https://...)', 'buried_link', p.buried_link, 'wide') %>
 				<%- field('Find a Grave link (https://...)', 'buried_grave', p.buried_grave, 'wide') %>
 				<%- placeLookup('buried', 'burial_lat', 'burial_lng', p.burial_lat, p.burial_lng) %>
+				<%- textarea('Source', 'burial_source', p.burial_source) %>
 			</div>
 		</fieldset>
 	</div>

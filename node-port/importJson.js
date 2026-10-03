@@ -64,6 +64,7 @@ function personColumns(node, treeId) {
 		buried: extra.buried || '',
 		buried_link: extra.buried_link || '',
 		buried_grave: extra.buried_grave || '',
+		burial_source: extra.burial_source || '',
 		notes: extra.notes || '',
 		linked_tree: extra.link || ''
 	};

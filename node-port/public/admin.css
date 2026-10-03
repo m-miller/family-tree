@@ -373,3 +373,11 @@ details.marriage-item[open] { background: #fff; padding-bottom: .8rem; }
 @media (max-width: 700px) {
 	.fields.fields-person { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+.fields .date-row input.date-helper {
+	width: 1px;
+	height: 1px;
+	min-width: 0;
+	padding: 0;
+	border: 0;
+}
