@@ -223,6 +223,7 @@
 		info.dataset.name = name;
 		info.innerHTML = buildInfoHtml(name, extra);
 		handlePanelButtons(info, extra);
+		setUrlPerson(extra && extra.person_id);
 	}
 
 	// ---------- node text ----------
@@ -650,6 +651,25 @@
 	var FOUND_MS = 4500;      // how long the highlight stays
 	var foundTimer = null;
 
+	/**
+	 * Keep the address bar naming whoever's panel is open, so reloading or
+	 * sharing the link comes back to them rather than to whoever you arrived
+	 * at. replaceState, not pushState: clicking around shouldn't fill the back
+	 * button with one entry per person.
+	 */
+	function setUrlPerson(id) {
+		var url = new URL(window.location.href);
+		if (id == null) {
+			url.searchParams.delete('person');
+		} else {
+			url.searchParams.set('person', id);
+		}
+		var next = url.pathname + url.search + url.hash;
+		if (next !== window.location.pathname + window.location.search + window.location.hash) {
+			window.history.replaceState(null, '', next);
+		}
+	}
+
 	/** The person's card on the chart that is showing, or null. */
 	function cardFor(id) {
 		var label = document.querySelector('#graph p[data-person="' + id + '"]');
@@ -682,6 +702,7 @@
 		var node = person ? cardFor(id) : null;
 		if (!node) {
 			showNotice('That person isn\u2019t on this chart. They may be in the other tree, or not yet joined to this one.');
+			setUrlPerson(null);
 			return false;
 		}
 
@@ -726,6 +747,12 @@
 		drawDescendants();
 		addZoomControls(chart);
 		addCardTilt(document.getElementById('graph'));
+
+		// The panel can close several ways (the cross, a click elsewhere, switching
+		// charts), so watch for it going rather than hooking each one.
+		new MutationObserver(function () {
+			if (!document.querySelector('#graph > .info')) setUrlPerson(null);
+		}).observe(document.getElementById('graph'), { childList: true });
 
 		// arriving from a link: /?person=123
 		var wanted = new URLSearchParams(window.location.search).get('person');
