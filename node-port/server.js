@@ -89,6 +89,46 @@ Object.entries(TREE_FILES).forEach(([file, slug]) => {
 	});
 });
 
+// ---------- places on the map ----------
+
+// Every recorded birth, death, burial and marriage that has coordinates.
+app.get('/places.json', async (req, res, next) => {
+	try {
+		const rows = await db.query(`
+			SELECT p.id, p.name, 'born' AS kind, p.birth_date_text AS date_text,
+			       concat_ws(', ', NULLIF(p.birthplace_name, ''), NULLIF(p.birth_city, ''),
+			                 NULLIF(p.birth_state_province, ''), NULLIF(p.birth_country, '')) AS place,
+			       p.birth_lat AS lat, p.birth_lng AS lng
+			  FROM people p WHERE p.birth_lat IS NOT NULL AND p.birth_lng IS NOT NULL
+			UNION ALL
+			SELECT p.id, p.name, 'died', p.death_date_text,
+			       concat_ws(', ', NULLIF(p.deathplace_name, ''), NULLIF(p.death_city, ''),
+			                 NULLIF(p.death_state_province, ''), NULLIF(p.death_country, '')),
+			       p.death_lat, p.death_lng
+			  FROM people p WHERE p.death_lat IS NOT NULL AND p.death_lng IS NOT NULL
+			UNION ALL
+			SELECT p.id, p.name, 'buried', '', p.buried, p.burial_lat, p.burial_lng
+			  FROM people p WHERE p.burial_lat IS NOT NULL AND p.burial_lng IS NOT NULL
+			UNION ALL
+			SELECT m.person_id, a.name || ' & ' || b.name, 'married', m.married_date_text,
+			       concat_ws(', ', NULLIF(m.married_place, ''), NULLIF(m.married_city, ''),
+			                 NULLIF(m.married_state, '')),
+			       m.married_lat, m.married_lng
+			  FROM marriages m
+			  JOIN people a ON a.id = m.person_id
+			  JOIN people b ON b.id = m.spouse_id
+			 WHERE m.married_lat IS NOT NULL AND m.married_lng IS NOT NULL`);
+
+		// numeric columns arrive as strings; the map wants numbers
+		res.json(rows.map((r) => ({
+			id: r.id, name: r.name, kind: r.kind, date: r.date_text, place: r.place,
+			lat: Number(r.lat), lng: Number(r.lng)
+		})));
+	} catch (err) {
+		next(err);
+	}
+});
+
 // ---------- the admin ----------
 
 app.use('/admin', admin(invalidateTree));
