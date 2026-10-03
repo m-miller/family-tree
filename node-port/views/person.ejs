@@ -15,23 +15,25 @@
 			.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 			.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 	}
-	function field(label, name, value, extra) {
-		return '<label>' + esc(label) + '<input type="text" name="' + esc(name)
-			+ '" value="' + esc(value) + '" ' + (extra || '') + '></label>';
+	/** A labelled text box. `cls` goes on the label: "wide" spans the card, "span-2" two columns. */
+	function field(label, name, value, cls) {
+		return '<label' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(label)
+			+ '<input type="text" name="' + esc(name) + '" value="' + esc(value) + '"></label>';
 	}
-	function textarea(label, name, value) {
-		return '<label>' + esc(label) + '<textarea name="' + esc(name) + '" rows="3">'
-			+ esc(value) + '</textarea></label>';
+	function textarea(label, name, value, rows) {
+		return '<label class="wide">' + esc(label) + '<textarea name="' + esc(name)
+			+ '" rows="' + (rows || 2) + '">' + esc(value) + '</textarea></label>';
 	}
 	const CALENDAR = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
 		+ '<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18"></path>'
 		+ '<path d="M8 3v4M16 3v4"></path>'
 		+ '<path d="M7 14h2M11 14h2M15 14h2M7 17.5h2M11 17.5h2"></path></svg>';
-	function dateField(label, name, value) {
+	function dateField(label, name, value, placeholder) {
 		const id = 'date-' + (++dateId);
 		return '<label>' + esc(label) + '<span class="date-row">'
 			+ '<input type="text" id="' + id + '" name="' + esc(name) + '" value="' + esc(value)
-			+ '" autocomplete="off">'
+			+ '" autocomplete="off" title="Accepts 3 Mar 1902, Mar 1902, 1902, abt 1850 or unknown"'
+			+ (placeholder ? ' placeholder="' + esc(placeholder) + '"' : '') + '>'
 			+ '<button type="button" class="date-button" data-for="' + id
 			+ '" title="Pick a date" aria-label="Pick a date">' + CALENDAR + '</button>'
 			+ '</span></label>';
@@ -41,7 +43,7 @@
 	 * fills in. The typed place name is never changed by the lookup.
 	 */
 	function placeLookup(fields, latName, lngName, lat, lng) {
-		return '<div class="place-row">'
+		return '<div class="place-row wide">'
 			+ '<button type="button" class="place-lookup" data-fields="' + esc(fields)
 			+ '" data-lat="' + esc(latName) + '" data-lng="' + esc(lngName) + '">Map</button>'
 			+ '<label class="coords">Latitude<input type="text" name="' + esc(latName)
@@ -55,205 +57,258 @@
 		const dates = ((c.birth_date_text || '?') + ' - ' + (c.death_date_text || '')).trim();
 		return c.name + ' (' + dates + ')';
 	}
+	/** True if any argument has something in it - used to open a collapsed section that holds data. */
+	function anyOf() {
+		return Array.prototype.some.call(arguments, Boolean);
+	}
+	const DATE_HINT = '3 Mar 1902';
 %>
 
-<form method="post" action="/admin/person/save" class="person">
+<form method="post" action="/admin/person/save" class="person-form">
 	<input type="hidden" name="csrf" value="<%= csrfToken %>">
 	<input type="hidden" name="id" value="<%= person ? person.id : 0 %>">
 
-	<fieldset>
+	<fieldset class="card">
 		<legend>Person</legend>
-		<%- field('Name', 'name', p.name) %>
-		<label>Sex
-			<select name="sex">
-				<option value="man" <%= p.sex === 'man' ? 'selected' : '' %>>Man</option>
-				<option value="woman" <%= p.sex === 'woman' ? 'selected' : '' %>>Woman</option>
-				<option value="unknown" <%= p.sex === 'unknown' ? 'selected' : '' %>>Unknown (neutral colour)</option>
-			</select>
-		</label>
-		<label>Tree
-			<select name="tree_id" <%= person ? 'disabled' : '' %>>
-				<% trees.forEach(function (t) { %>
-					<option value="<%= t.id %>" <%= treeId === t.id ? 'selected' : '' %>><%= t.title %></option>
-				<% }); %>
-			</select>
-		</label>
+		<div class="fields fields-person">
+			<%- field('Name', 'name', p.name, 'span-2') %>
+			<label>Sex
+				<select name="sex">
+					<option value="man" <%= p.sex === 'man' ? 'selected' : '' %>>Man</option>
+					<option value="woman" <%= p.sex === 'woman' ? 'selected' : '' %>>Woman</option>
+					<option value="unknown" <%= p.sex === 'unknown' ? 'selected' : '' %>>Unknown (neutral colour)</option>
+				</select>
+			</label>
+			<label>Tree
+				<select name="tree_id" <%= person ? 'disabled' : '' %>>
+					<% trees.forEach(function (t) { %>
+						<option value="<%= t.id %>" <%= treeId === t.id ? 'selected' : '' %>><%= t.title %></option>
+					<% }); %>
+				</select>
+			</label>
+			<%- field('Links to another tree (slug, e.g. horne)', 'linked_tree', p.linked_tree, 'span-2') %>
+			<div class="checks span-2">
+				<label class="check"><input type="checkbox" name="adopted" value="1" <%= p.adopted ? 'checked' : '' %>> Adopted (shown with an asterisk)</label>
+				<label class="check"><input type="checkbox" name="is_placeholder" value="1" <%= p.is_placeholder ? 'checked' : '' %>> Placeholder, e.g. "8 unnamed children"</label>
+			</div>
+		</div>
 		<% if (person) { %><input type="hidden" name="tree_id" value="<%= person.tree_id %>"><% } %>
-		<label class="check"><input type="checkbox" name="adopted" value="1" <%= p.adopted ? 'checked' : '' %>> Adopted (shown with an asterisk)</label>
-		<label class="check"><input type="checkbox" name="is_placeholder" value="1" <%= p.is_placeholder ? 'checked' : '' %>> Placeholder, e.g. "8 unnamed children"</label>
-		<%- field('Links to another tree (slug, e.g. horne)', 'linked_tree', p.linked_tree) %>
 	</fieldset>
 
-	<fieldset>
-		<legend>Birth</legend>
-		<%- dateField('Date (3 Mar 1902, Mar 1902, 1902 or unknown)', 'birth_date_text', p.birth_date_text) %>
-		<%- field('Place name', 'birthplace_name', p.birthplace_name) %>
-		<%- field('Address 1', 'birth_address1', p.birth_address1) %>
-		<%- field('Address 2', 'birth_address2', p.birth_address2) %>
-		<%- field('City', 'birth_city', p.birth_city) %>
-		<%- field('State or province', 'birth_state_province', p.birth_state_province) %>
-		<%- field('Postal code', 'birth_zip_postal_code', p.birth_zip_postal_code) %>
-		<%- field('Country', 'birth_country', p.birth_country) %>
-		<%- placeLookup('birthplace_name,birth_city,birth_state_province,birth_country',
-			'birth_lat', 'birth_lng', p.birth_lat, p.birth_lng) %>
-		<%- textarea('Source (where these details came from)', 'birth_source', p.birth_source) %>
-	</fieldset>
+	<div class="trio">
+		<fieldset class="card">
+			<legend>Birth</legend>
+			<div class="fields">
+				<%- dateField('Date', 'birth_date_text', p.birth_date_text, DATE_HINT) %>
+				<%- field('Place name', 'birthplace_name', p.birthplace_name) %>
+				<%- field('City', 'birth_city', p.birth_city) %>
+				<%- field('State or province', 'birth_state_province', p.birth_state_province) %>
+				<%- field('Country', 'birth_country', p.birth_country, 'wide') %>
+			</div>
+			<details class="more" <%= anyOf(p.birth_address1, p.birth_address2, p.birth_zip_postal_code) ? 'open' : '' %>>
+				<summary>Street address and postal code</summary>
+				<div class="fields">
+					<%- field('Address 1', 'birth_address1', p.birth_address1, 'wide') %>
+					<%- field('Address 2', 'birth_address2', p.birth_address2, 'wide') %>
+					<%- field('Postal code', 'birth_zip_postal_code', p.birth_zip_postal_code) %>
+				</div>
+			</details>
+			<div class="fields">
+				<%- placeLookup('birthplace_name,birth_city,birth_state_province,birth_country',
+					'birth_lat', 'birth_lng', p.birth_lat, p.birth_lng) %>
+				<%- textarea('Source (where these details came from)', 'birth_source', p.birth_source) %>
+			</div>
+		</fieldset>
 
-	<fieldset>
-		<legend>Death</legend>
-		<%- dateField('Date', 'death_date_text', p.death_date_text) %>
-		<%- field('Place name', 'deathplace_name', p.deathplace_name) %>
-		<%- field('Address 1', 'death_address1', p.death_address1) %>
-		<%- field('Address 2', 'death_address2', p.death_address2) %>
-		<%- field('City', 'death_city', p.death_city) %>
-		<%- field('State or province', 'death_state_province', p.death_state_province) %>
-		<%- field('Postal code', 'death_zip_postal_code', p.death_zip_postal_code) %>
-		<%- field('Country', 'death_country', p.death_country) %>
-		<%- placeLookup('deathplace_name,death_city,death_state_province,death_country',
-			'death_lat', 'death_lng', p.death_lat, p.death_lng) %>
-		<%- textarea('Source', 'death_source', p.death_source) %>
-	</fieldset>
+		<fieldset class="card">
+			<legend>Death</legend>
+			<div class="fields">
+				<%- dateField('Date', 'death_date_text', p.death_date_text, DATE_HINT) %>
+				<%- field('Place name', 'deathplace_name', p.deathplace_name) %>
+				<%- field('City', 'death_city', p.death_city) %>
+				<%- field('State or province', 'death_state_province', p.death_state_province) %>
+				<%- field('Country', 'death_country', p.death_country, 'wide') %>
+			</div>
+			<details class="more" <%= anyOf(p.death_address1, p.death_address2, p.death_zip_postal_code) ? 'open' : '' %>>
+				<summary>Street address and postal code</summary>
+				<div class="fields">
+					<%- field('Address 1', 'death_address1', p.death_address1, 'wide') %>
+					<%- field('Address 2', 'death_address2', p.death_address2, 'wide') %>
+					<%- field('Postal code', 'death_zip_postal_code', p.death_zip_postal_code) %>
+				</div>
+			</details>
+			<div class="fields">
+				<%- placeLookup('deathplace_name,death_city,death_state_province,death_country',
+					'death_lat', 'death_lng', p.death_lat, p.death_lng) %>
+				<%- textarea('Source', 'death_source', p.death_source) %>
+			</div>
+		</fieldset>
 
-	<fieldset>
-		<legend>Burial and notes</legend>
-		<%- field('Buried', 'buried', p.buried) %>
-		<%- field('Cemetery map link (https://...)', 'buried_link', p.buried_link) %>
-		<%- field('Find a Grave link (https://...)', 'buried_grave', p.buried_grave) %>
-		<%- placeLookup('buried', 'burial_lat', 'burial_lng', p.burial_lat, p.burial_lng) %>
-		<%- textarea('Notes', 'notes', p.notes) %>
-	</fieldset>
+		<fieldset class="card">
+			<legend>Burial</legend>
+			<div class="fields">
+				<%- field('Buried', 'buried', p.buried, 'wide') %>
+				<%- field('Cemetery map link (https://...)', 'buried_link', p.buried_link, 'wide') %>
+				<%- field('Find a Grave link (https://...)', 'buried_grave', p.buried_grave, 'wide') %>
+				<%- placeLookup('buried', 'burial_lat', 'burial_lng', p.burial_lat, p.burial_lng) %>
+			</div>
+		</fieldset>
+	</div>
 
-	<button type="submit"><%= person ? 'Save changes' : 'Add this person' %></button>
-	<a class="cancel" href="<%= listUrl %>">Back to the list</a>
+	<div class="card">
+		<div class="fields">
+			<%- textarea('Notes', 'notes', p.notes, 4) %>
+		</div>
+	</div>
+
+	<div class="save-bar">
+		<button type="submit"><%= person ? 'Save changes' : 'Add this person' %></button>
+		<a class="cancel" href="<%= listUrl %>">Back to the list</a>
+	</div>
 </form>
 
 <% if (person) { %>
-<section>
-	<h2>Parents</h2>
-	<form method="post" action="/admin/person/<%= person.id %>/parents" class="inline">
-		<input type="hidden" name="csrf" value="<%= csrfToken %>">
-		<label class="inline-label">Child of
-			<select name="marriage_id">
-				<option value="0">No parents recorded</option>
-				<% couples.forEach(function (c) { %>
-					<option value="<%= c.id %>" <%= parentMarriage && parentMarriage.marriage_id === c.id ? 'selected' : '' %>>
-						<%= c.a_name %> &amp; <%= c.b_name || '?' %>
-					</option>
-				<% }); %>
-			</select>
-		</label>
-		<button type="submit">Save</button>
-	</form>
-
-	<% if (!parentMarriage) { %>
-	<form method="post" action="/admin/person/<%= person.id %>/add-parents" class="marriage new">
-		<input type="hidden" name="csrf" value="<%= csrfToken %>">
-		<h3>Add parents</h3>
-		<p class="hint">Makes <%= p.name %> the child of these two. Type a name to create someone, or
-			pick a person already entered but not yet on the chart - which is how a line entered
-			separately gets joined on. Leave both blank for an unknown parent to fill in later.
-			<% if (isRoot || drawnHere) { %>
-				Because <%= p.name %> appears on the chart, the chart will start from the new father
-				afterwards.
-			<% } %>
-		</p>
-		<div class="parent-choice">
-			<%- field('Father (new name)', 'father_name', '') %>
-			<label>or someone already in the tree
-				<select name="father_id">
-					<option value="0">nobody yet</option>
-					<% unattached.forEach(function (c) { %>
-						<option value="<%= c.id %>"><%= personLabel(c) %></option>
-					<% }); %>
-				</select>
-			</label>
-		</div>
-		<div class="parent-choice">
-			<%- field('Mother (new name)', 'mother_name', '') %>
-			<label>or someone already in the tree
-				<select name="mother_id">
-					<option value="0">nobody yet</option>
-					<% unattached.forEach(function (c) { %>
-						<option value="<%= c.id %>"><%= personLabel(c) %></option>
-					<% }); %>
-				</select>
-			</label>
-		</div>
-		<%- dateField('Married on', 'married_date_text', '') %>
-		<%- field('Married at', 'married_place', '') %>
-		<button type="submit">Add parents</button>
-	</form>
-	<% } %>
-</section>
-
-<section>
-	<h2>Marriages</h2>
-	<% marriages.forEach(function (m) { %>
-	<form method="post" action="/admin/person/<%= person.id %>/marriage" class="marriage">
-		<input type="hidden" name="csrf" value="<%= csrfToken %>">
-		<input type="hidden" name="marriage_id" value="<%= m.id %>">
-		<label>Spouse
-			<select name="spouse_id">
-				<% candidates.forEach(function (c) { %>
-					<option value="<%= c.id %>" <%= m.spouse_id === c.id ? 'selected' : '' %>><%= personLabel(c) %></option>
-				<% }); %>
-			</select>
-		</label>
-		<%- dateField('Date', 'married_date_text', m.married_date_text) %>
-		<%- field('Place', 'married_place', m.married_place) %>
-		<%- field('City', 'married_city', m.married_city) %>
-		<%- field('State', 'married_state', m.married_state) %>
-		<%- placeLookup('married_place,married_city,married_state', 'married_lat', 'married_lng', m.married_lat, m.married_lng) %>
-		<%- textarea('Source', 'married_source', m.married_source) %>
-		<button type="submit">Save this marriage</button>
-		<button type="submit" formaction="/admin/person/<%= person.id %>/marriage/<%= m.id %>/delete"
-			class="danger" onclick="return confirm('Remove this marriage?')">Remove</button>
-	</form>
-	<% }); %>
-
-	<form method="post" action="/admin/person/<%= person.id %>/marriage" class="marriage new">
-		<input type="hidden" name="csrf" value="<%= csrfToken %>">
-		<input type="hidden" name="marriage_id" value="0">
-		<h3>Add a marriage</h3>
-		<label>Spouse already in the tree
-			<select name="spouse_id">
-				<option value="0">Not in the tree yet</option>
-				<% candidates.forEach(function (c) { %>
-					<option value="<%= c.id %>"><%= personLabel(c) %></option>
-				<% }); %>
-			</select>
-		</label>
-		<%- field('Or add them by name (creates a new person, sex unknown)', 'new_spouse_name', '') %>
-		<%- dateField('Date', 'married_date_text', '') %>
-		<%- field('Place', 'married_place', '') %>
-		<%- field('City', 'married_city', '') %>
-		<%- field('State', 'married_state', '') %>
-		<%- placeLookup('married_place,married_city,married_state', 'married_lat', 'married_lng', '', '') %>
-		<%- textarea('Source', 'married_source', '') %>
-		<button type="submit">Add marriage</button>
-	</form>
-</section>
-
-<section>
-	<h2>Chart</h2>
-	<% if (isRoot) { %>
-		<p>The chart starts from this person.</p>
-	<% } else { %>
-		<form method="post" action="/admin/person/<%= person.id %>/make-root"
-			onsubmit="return confirm('Start the chart from <%= p.name %>?')">
+<div class="family">
+	<section class="card">
+		<h3>Parents</h3>
+		<form method="post" action="/admin/person/<%= person.id %>/parents" class="inline">
 			<input type="hidden" name="csrf" value="<%= csrfToken %>">
-			<button type="submit">Start the chart from this person</button>
+			<label class="inline-label">Child of
+				<select name="marriage_id">
+					<option value="0">No parents recorded</option>
+					<% couples.forEach(function (c) { %>
+						<option value="<%= c.id %>" <%= parentMarriage && parentMarriage.marriage_id === c.id ? 'selected' : '' %>>
+							<%= c.a_name %> &amp; <%= c.b_name || '?' %>
+						</option>
+					<% }); %>
+				</select>
+			</label>
+			<button type="submit">Save</button>
 		</form>
-	<% } %>
-</section>
 
-<section>
-	<h2>Delete</h2>
-	<form method="post" action="/admin/person/<%= person.id %>/delete"
-		onsubmit="return confirm('Delete <%= p.name %>? This cannot be undone.')">
-		<input type="hidden" name="csrf" value="<%= csrfToken %>">
-		<button type="submit" class="danger">Delete this person</button>
-	</form>
-</section>
+		<% if (!parentMarriage) { %>
+		<details class="more">
+			<summary>Add parents</summary>
+			<form method="post" action="/admin/person/<%= person.id %>/add-parents">
+				<input type="hidden" name="csrf" value="<%= csrfToken %>">
+				<p class="hint">Makes <%= p.name %> the child of these two. Type a name to create someone, or
+					pick a person already entered but not yet on the chart - which is how a line entered
+					separately gets joined on. Leave both blank for an unknown parent to fill in later.
+					<% if (isRoot || drawnHere) { %>
+						Because <%= p.name %> appears on the chart, the chart will start from the new father
+						afterwards.
+					<% } %>
+				</p>
+				<div class="fields">
+					<%- field('Father (new name)', 'father_name', '') %>
+					<label>or someone already in the tree
+						<select name="father_id">
+							<option value="0">nobody yet</option>
+							<% unattached.forEach(function (c) { %>
+								<option value="<%= c.id %>"><%= personLabel(c) %></option>
+							<% }); %>
+						</select>
+					</label>
+					<%- field('Mother (new name)', 'mother_name', '') %>
+					<label>or someone already in the tree
+						<select name="mother_id">
+							<option value="0">nobody yet</option>
+							<% unattached.forEach(function (c) { %>
+								<option value="<%= c.id %>"><%= personLabel(c) %></option>
+							<% }); %>
+						</select>
+					</label>
+					<%- dateField('Married on', 'married_date_text', '', DATE_HINT) %>
+					<%- field('Married at', 'married_place', '') %>
+				</div>
+				<div class="form-buttons"><button type="submit">Add parents</button></div>
+			</form>
+		</details>
+		<% } %>
+	</section>
+
+	<section class="card">
+		<h3>Marriages</h3>
+		<% marriages.forEach(function (m) { %>
+		<details class="marriage-item">
+			<summary>
+				<strong><%= m.spouse_person_name %></strong>
+				<span class="muted"><%= [m.married_date_text, m.married_place || m.married_city].filter(Boolean).join(' \u00b7 ') %></span>
+			</summary>
+			<form method="post" action="/admin/person/<%= person.id %>/marriage">
+				<input type="hidden" name="csrf" value="<%= csrfToken %>">
+				<input type="hidden" name="marriage_id" value="<%= m.id %>">
+				<div class="fields">
+					<label class="wide">Spouse
+						<select name="spouse_id">
+							<% candidates.forEach(function (c) { %>
+								<option value="<%= c.id %>" <%= m.spouse_id === c.id ? 'selected' : '' %>><%= personLabel(c) %></option>
+							<% }); %>
+						</select>
+					</label>
+					<%- dateField('Date', 'married_date_text', m.married_date_text, DATE_HINT) %>
+					<%- field('Place', 'married_place', m.married_place) %>
+					<%- field('City', 'married_city', m.married_city) %>
+					<%- field('State', 'married_state', m.married_state) %>
+					<%- placeLookup('married_place,married_city,married_state', 'married_lat', 'married_lng', m.married_lat, m.married_lng) %>
+					<%- textarea('Source', 'married_source', m.married_source) %>
+				</div>
+				<div class="form-buttons">
+					<button type="submit">Save this marriage</button>
+					<button type="submit" formaction="/admin/person/<%= person.id %>/marriage/<%= m.id %>/delete"
+						class="danger" onclick="return confirm('Remove this marriage?')">Remove</button>
+				</div>
+			</form>
+		</details>
+		<% }); %>
+
+		<details class="more">
+			<summary>Add a marriage</summary>
+			<form method="post" action="/admin/person/<%= person.id %>/marriage">
+				<input type="hidden" name="csrf" value="<%= csrfToken %>">
+				<input type="hidden" name="marriage_id" value="0">
+				<div class="fields">
+					<label>Spouse already in the tree
+						<select name="spouse_id">
+							<option value="0">Not in the tree yet</option>
+							<% candidates.forEach(function (c) { %>
+								<option value="<%= c.id %>"><%= personLabel(c) %></option>
+							<% }); %>
+						</select>
+					</label>
+					<%- field('Or add them by name (creates a new person)', 'new_spouse_name', '') %>
+					<%- dateField('Date', 'married_date_text', '', DATE_HINT) %>
+					<%- field('Place', 'married_place', '') %>
+					<%- field('City', 'married_city', '') %>
+					<%- field('State', 'married_state', '') %>
+					<%- placeLookup('married_place,married_city,married_state', 'married_lat', 'married_lng', '', '') %>
+					<%- textarea('Source', 'married_source', '') %>
+				</div>
+				<div class="form-buttons"><button type="submit">Add marriage</button></div>
+			</form>
+		</details>
+	</section>
+
+	<section class="card">
+		<h3>Chart</h3>
+		<% if (isRoot) { %>
+			<p>The chart starts from this person.</p>
+		<% } else { %>
+			<form method="post" action="/admin/person/<%= person.id %>/make-root"
+				onsubmit="return confirm('Start the chart from <%= p.name %>?')">
+				<input type="hidden" name="csrf" value="<%= csrfToken %>">
+				<button type="submit">Start the chart from this person</button>
+			</form>
+		<% } %>
+		<details class="more danger-zone">
+			<summary>Delete this person</summary>
+			<form method="post" action="/admin/person/<%= person.id %>/delete"
+				onsubmit="return confirm('Delete <%= p.name %>? This cannot be undone.')">
+				<input type="hidden" name="csrf" value="<%= csrfToken %>">
+				<button type="submit" class="danger">Delete this person</button>
+			</form>
+		</details>
+	</section>
+</div>
 <% } %>
 <%- include('layout-foot') %>
