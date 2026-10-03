@@ -292,3 +292,37 @@ div > p {
 	transform: rotate(180deg);
 	transition: transform 1s ease, color 1s ease, border-color .15s ease;
 }
+
+/* a card reached from a link: outlined, with a ring that pulses outwards */
+@keyframes found-pulse {
+	from { box-shadow: 0 0 0 0 rgba(242, 183, 5, .9); }
+	to   { box-shadow: 0 0 0 22px rgba(242, 183, 5, 0); }
+}
+.found {
+	outline: 3px solid #f2b705;
+	outline-offset: 2px;
+	animation: found-pulse 1.2s ease-out 3;
+}
+
+/* names in the panel that go to that person's card */
+.info a.goto-person {
+	color: inherit;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+/* a short message over the chart, e.g. when a link's person isn't on it */
+.notice {
+	position: absolute;
+	top: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 10;
+	max-width: 80%;
+	padding: .5rem .9rem;
+	border-radius: 4px;
+	background: #222;
+	color: #fff;
+	font-size: .85rem;
+	text-align: center;
+}

@@ -166,6 +166,10 @@
 	<div class="save-bar">
 		<button type="submit"><%= person ? 'Save changes' : 'Add this person' %></button>
 		<a class="cancel" href="<%= listUrl %>">Back to the list</a>
+		<% if (person) { %>
+			<% const home = trees.find(function (t) { return t.id === person.tree_id; }); %>
+			<a class="cancel" href="<%= home && home.slug === 'horne' ? '/Horne.html' : '/' %>?person=<%= person.id %>">View in tree</a>
+		<% } %>
 	</div>
 </form>
 

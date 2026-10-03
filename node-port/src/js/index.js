@@ -29,6 +29,7 @@
 
 	var family = null;      // the index built from the tree data
 	var relateTo = null;    // the person picked as the other end, if any
+	var peopleById = {};    // database id -> person, for links to a card
 
 	function personFor(extra) {
 		return family && extra ? family.byExtra.get(extra) || null : null;
@@ -39,6 +40,16 @@
 		if (!person || !window.Pedigree) return '';
 		if (!person.parents.length) return '';
 		return '<hr /><button type="button" id="show-ancestors">Show this person\u2019s ancestors</button>';
+	}
+
+	/**
+	 * A name that goes to that person's place on the tree. Plain text when we
+	 * don't know who they are, so a stale id can never produce a dead link.
+	 */
+	function personLink(id, name) {
+		if (id == null || !peopleById[id]) return escapeHtml(name);
+		return '<a class="goto-person" data-person="' + escapeHtml(id) + '" href="?person='
+			+ encodeURIComponent(id) + '">' + escapeHtml(name) + '</a>';
 	}
 
 	/** The line shown in the panel: either the relationship, or the button. */
@@ -55,7 +66,11 @@
 				+ '<br /><button type="button" id="relate-clear">Cancel</button>';
 		}
 		return '<hr /><span class="relation">'
-			+ escapeHtml(window.FamilyRelations.describe(person, relateTo))
+			+ window.FamilyRelations.describe(person, relateTo, function (who) {
+				// no link for the person whose panel this is: they are already here
+				return who === person ? escapeHtml(who.name)
+					: personLink(who.extra && who.extra.person_id, who.name);
+			})
 			+ '</span><br /><button type="button" id="relate-clear">Clear</button>';
 	}
 
@@ -125,7 +140,7 @@
 			part(e.birth_country, '<br />') +
 			part(e.birth_source, '<br /><span class="source">Source: ', '</span>') +
 			// marriage
-			part(e.married_to, '<hr />Married to: ') +
+			(has(e.married_to) ? '<hr />Married to: ' + personLink(e.married_to_id, e.married_to) : '') +
 			part(e.married_date, '<br />on: ') +
 			part(e.married_place, '<br />at: ') +
 			part(e.married_city, '<br />') +
@@ -153,6 +168,13 @@
 	}
 
 	function handlePanelButtons(info, extra) {
+		Array.prototype.forEach.call(info.querySelectorAll('a.goto-person'), function (link) {
+			link.addEventListener('click', function (event) {
+				event.preventDefault();      // the href is only for "open in a new tab"
+				event.stopPropagation();
+				jumpToPerson(Number(link.dataset.person));
+			});
+		});
 		var ancestors = info.querySelector('#show-ancestors');
 		if (ancestors) {
 			ancestors.addEventListener('click', function (event) {
@@ -211,7 +233,8 @@
 			text += part(extra.birthdate, '<br /><span class="halfrem">Born: ', '</span>');
 			text += part(extra.deathdate, '<br /><span class="halfrem">Died: ', '</span>');
 		}
-		return '<p class="' + escapeHtml(textClass) + '">' + text + '</p>';
+		var who = extra && extra.person_id != null ? ' data-person="' + escapeHtml(extra.person_id) + '"' : '';
+		return '<p class="' + escapeHtml(textClass) + '"' + who + '>' + text + '</p>';
 	}
 
 	// ---------- spouse border styles (.spouse-1 ... .spouse-9) ----------
@@ -621,6 +644,65 @@
 		draw();
 	}
 
+	// ---------- going to a person ----------
+
+	var JUMP_ZOOM = 1.5;      // how close to come in on the card
+	var FOUND_MS = 4500;      // how long the highlight stays
+	var foundTimer = null;
+
+	/** The person's card on the chart that is showing, or null. */
+	function cardFor(id) {
+		var label = document.querySelector('#graph p[data-person="' + id + '"]');
+		return label ? label.closest('foreignObject') : null;
+	}
+
+	function showNotice(text) {
+		var graph = document.getElementById('graph');
+		var old = graph.querySelector('.notice');
+		if (old) old.remove();
+		var note = document.createElement('div');
+		note.className = 'notice';
+		note.textContent = text;
+		graph.appendChild(note);
+		window.setTimeout(function () { note.remove(); }, 6000);
+	}
+
+	/**
+	 * Take the view to a person's card, highlight it and open their panel.
+	 *
+	 * A person has one position, and it is on the full tree, so from the
+	 * ancestor chart this switches back to that first.
+	 */
+	function jumpToPerson(id) {
+		var person = peopleById[id];
+		if (person && mode !== 'descendants') {
+			mode = 'descendants';
+			draw();
+		}
+		var node = person ? cardFor(id) : null;
+		if (!node) {
+			showNotice('That person isn\u2019t on this chart. They may be in the other tree, or not yet joined to this one.');
+			return false;
+		}
+
+		// The card div is id="node<N>", where N is the id dTree itself uses for the
+		// node. (The foreignObject's own id is a different counter, and would
+		// centre on the wrong person.)
+		var card = node.querySelector('div');
+		chart.zoomToNode(parseInt(card.id.replace('node', ''), 10), JUMP_ZOOM, 700);
+
+		// one highlight at a time, however quickly you jump about
+		Array.prototype.forEach.call(document.querySelectorAll('.found'), function (other) {
+			other.classList.remove('found');
+		});
+		window.clearTimeout(foundTimer);
+		card.classList.add('found');
+		foundTimer = window.setTimeout(function () { card.classList.remove('found'); }, FOUND_MS);
+
+		showInfo(node, person.name, person.extra);
+		return true;
+	}
+
 	// Gap between one generation's cards and the next, on top of the card
 	// height itself. dTree's own default is 25.
 	var GENERATION_GAP = 60;
@@ -634,10 +716,21 @@
 		}
 		if (window.FamilyRelations) {
 			family = window.FamilyRelations.index(data);
+			family.people.forEach(function (person) {
+				if (person.extra && person.extra.person_id != null) {
+					peopleById[person.extra.person_id] = person;
+				}
+			});
 		}
 		treeData = data;
 		drawDescendants();
 		addZoomControls(chart);
 		addCardTilt(document.getElementById('graph'));
+
+		// arriving from a link: /?person=123
+		var wanted = new URLSearchParams(window.location.search).get('person');
+		if (wanted !== null && /^\d+$/.test(wanted)) {
+			jumpToPerson(Number(wanted));
+		}
 	});
 })();

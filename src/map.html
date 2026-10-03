@@ -164,6 +164,14 @@
 		return 'conic-gradient(' + slices.join(', ') + ')';
 	}
 
+	// where each tree lives, so a name can link to the right page
+	var TREE_PAGES = { miller: '/', horne: '/Horne.html' };
+
+	function personLink(id, name, tree) {
+		return '<a href="' + (TREE_PAGES[tree] || '/') + '?person=' + Number(id)
+			+ '" title="Show in the tree">' + esc(name) + '</a>';
+	}
+
 	function popupFor(spot) {
 		// the names typed for a spot can differ; the first one stands for it
 		var title = spot.events.map(function (e) { return e.place; }).filter(Boolean)[0]
@@ -175,7 +183,10 @@
 			if (!here.length) return;
 			html += '<h4>' + LABELS[kind] + '</h4><ul>' + here.map(function (e) {
 				var dated = e.date && !/^unknown$/i.test(e.date);
-				return '<li>' + esc(e.name) + (dated ? ' (' + esc(e.date) + ')' : '') + '</li>';
+				// a marriage names two people; each goes to their own card
+				var who = personLink(e.id, e.name, e.tree)
+					+ (e.name2 ? ' &amp; ' + personLink(e.id2, e.name2, e.tree) : '');
+				return '<li>' + who + (dated ? ' (' + esc(e.date) + ')' : '') + '</li>';
 			}).join('') + '</ul>';
 		});
 		return html;

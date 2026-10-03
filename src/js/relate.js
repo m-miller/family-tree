@@ -232,16 +232,21 @@
 		return null;
 	}
 
-	/** A whole sentence, ready to show. */
-	function describe(a, b) {
+	/**
+	 * A whole sentence, ready to show. `label` turns a person into the text for
+	 * their name - pass one to get links (and to do the escaping yourself);
+	 * without it names are plain text.
+	 */
+	function describe(a, b, label) {
+		label = label || function (person) { return person.name; };
 		var term = relationship(a, b);
 		if (!term) {
-			return a.name + ' and ' + b.name + ' have no recorded connection.';
+			return label(a) + ' and ' + label(b) + ' have no recorded connection.';
 		}
 		if (term === 'the same person') {
 			return 'That is the same person.';
 		}
-		return a.name + ' is the ' + term + ' of ' + b.name + '.';
+		return label(a) + ' is the ' + term + ' of ' + label(b) + '.';
 	}
 
 	var api = {

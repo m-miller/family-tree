@@ -111,7 +111,8 @@ function url(changes) {
 			<td><%= p.tree_slug %></td>
 			<td><%= p.birth_date_text %></td>
 			<td><%= p.death_date_text %></td>
-			<td><a href="/admin/person/<%= p.id %>">Edit</a></td>
+			<td><a href="/admin/person/<%= p.id %>">Edit</a>
+			<a href="<%= p.tree_slug === 'horne' ? '/Horne.html' : '/' %>?person=<%= p.id %>">View in tree</a></td>
 		</tr>
 		<% }); %>
 	</tbody>
