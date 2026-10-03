@@ -68,8 +68,9 @@ function dateIsUnparsed(text) {
 }
 
 /** The extra{} block every person gets, in the order the chart expects. */
-function extraFor(person, marriage, spouseName) {
+function extraFor(person, marriage, spouseName, spouseId) {
 	return {
+		person_id: person.id,
 		birthdate: person.birth_date_text,
 		birthplace_name: person.birthplace_name,
 		birth_address1: person.birth_address1,
@@ -80,6 +81,7 @@ function extraFor(person, marriage, spouseName) {
 		birth_country: person.birth_country,
 		birth_source: person.birth_source,
 		married_to: spouseName || '',
+		married_to_id: spouseId || null,
 		married_date: marriage ? marriage.married_date_text : '',
 		married_place: marriage ? marriage.married_place : '',
 		married_city: marriage ? marriage.married_city : '',
@@ -166,16 +168,20 @@ async function buildTreeJson(treeId) {
 		// the marriage a person's own details mention is their first, either side
 		const first = (anySide.get(id) || [])[0] || null;
 		let spouseName = '';
+		let spouseId = null;
 		if (first) {
 			const otherId = first.person_id === id ? first.spouse_id : first.person_id;
 			const other = people.get(otherId);
-			if (other) spouseName = (other.adopted ? '*' : '') + other.name;
+			if (other) {
+				spouseName = (other.adopted ? '*' : '') + other.name;
+				spouseId = other.id;
+			}
 		}
 
 		const out = {
 			name: (person.adopted ? '*' : '') + person.name,
 			class: person.sex,
-			extra: extraFor(person, first, spouseName)
+			extra: extraFor(person, first, spouseName, spouseId)
 		};
 
 		const marriages = [];
