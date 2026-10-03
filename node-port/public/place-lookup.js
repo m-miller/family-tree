@@ -10,6 +10,7 @@
 
 	function fieldValue(form, name) {
 		var input = form.querySelector('[name="' + name + '"]');
+		console.log(input);
 		return input ? input.value.trim() : '';
 	}
 
