@@ -1,4 +1,4 @@
-<%- include('layout-head', { needsDatepicker: true }) %>
+<%- include('layout-head', { needsDatepicker: true, needsPlaceLookup: true }) %>
 <%
 	const p = person || {
 		name: '', sex: 'man', adopted: false, is_placeholder: false, linked_tree: '',
@@ -6,7 +6,8 @@
 		birth_city: '', birth_state_province: '', birth_zip_postal_code: '', birth_country: '',
 		birth_source: '', death_date_text: '', deathplace_name: '', death_address1: '',
 		death_address2: '', death_city: '', death_state_province: '', death_zip_postal_code: '',
-		death_country: '', death_source: '', buried: '', buried_link: '', buried_grave: '', notes: ''
+		death_country: '', death_source: '', buried: '', buried_link: '', buried_grave: '', notes: '',
+		birth_lat: '', birth_lng: '', death_lat: '', death_lng: '', burial_lat: '', burial_lng: ''
 	};
 	let dateId = 0;
 	function esc(v) {
@@ -35,6 +36,21 @@
 			+ '" title="Pick a date" aria-label="Pick a date">' + CALENDAR + '</button>'
 			+ '</span></label>';
 	}
+	/**
+	 * A "look up" button for a group of place fields, with the coordinates it
+	 * fills in. The typed place name is never changed by the lookup.
+	 */
+	function placeLookup(fields, latName, lngName, lat, lng) {
+		return '<div class="place-row">'
+			+ '<button type="button" class="place-lookup" data-fields="' + esc(fields)
+			+ '" data-lat="' + esc(latName) + '" data-lng="' + esc(lngName) + '">Look up on the map</button>'
+			+ '<label class="coords">Latitude<input type="text" name="' + esc(latName)
+			+ '" value="' + esc(lat == null ? '' : lat) + '" inputmode="decimal"></label>'
+			+ '<label class="coords">Longitude<input type="text" name="' + esc(lngName)
+			+ '" value="' + esc(lng == null ? '' : lng) + '" inputmode="decimal"></label>'
+			+ '</div>';
+	}
+
 	function personLabel(c) {
 		const dates = ((c.birth_date_text || '?') + ' - ' + (c.death_date_text || '')).trim();
 		return c.name + ' (' + dates + ')';
@@ -78,6 +94,8 @@
 		<%- field('State or province', 'birth_state_province', p.birth_state_province) %>
 		<%- field('Postal code', 'birth_zip_postal_code', p.birth_zip_postal_code) %>
 		<%- field('Country', 'birth_country', p.birth_country) %>
+		<%- placeLookup('birthplace_name,birth_city,birth_state_province,birth_country',
+			'birth_lat', 'birth_lng', p.birth_lat, p.birth_lng) %>
 		<%- textarea('Source (where these details came from)', 'birth_source', p.birth_source) %>
 	</fieldset>
 
@@ -91,6 +109,8 @@
 		<%- field('State or province', 'death_state_province', p.death_state_province) %>
 		<%- field('Postal code', 'death_zip_postal_code', p.death_zip_postal_code) %>
 		<%- field('Country', 'death_country', p.death_country) %>
+		<%- placeLookup('deathplace_name,death_city,death_state_province,death_country',
+			'death_lat', 'death_lng', p.death_lat, p.death_lng) %>
 		<%- textarea('Source', 'death_source', p.death_source) %>
 	</fieldset>
 
@@ -99,6 +119,7 @@
 		<%- field('Buried', 'buried', p.buried) %>
 		<%- field('Cemetery map link (https://...)', 'buried_link', p.buried_link) %>
 		<%- field('Find a Grave link (https://...)', 'buried_grave', p.buried_grave) %>
+		<%- placeLookup('buried', 'burial_lat', 'burial_lng', p.burial_lat, p.burial_lng) %>
 		<%- textarea('Notes', 'notes', p.notes) %>
 	</fieldset>
 

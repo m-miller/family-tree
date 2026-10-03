@@ -227,3 +227,38 @@ nav.letters .letter.is-empty {
 	background: #fafafa;
 	margin-left: 5px;
 }
+
+/* place lookup in the admin */
+.place-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .5rem;
+	align-items: flex-end;
+	margin: .4rem 0;
+}
+.place-row label.coords {
+	margin: 0;
+	font-size: .8rem;
+}
+.place-row label.coords input {
+	width: 8rem;
+}
+.place-results {
+	margin: .3rem 0 .6rem;
+	font-size: .8rem;
+	color: #444;
+}
+button.place-choice {
+	display: block;
+	width: 100%;
+	margin: .15rem 0;
+	padding: .3rem .5rem;
+	text-align: left;
+	font: inherit;
+	font-size: .8rem;
+	background: #f7f7f7;
+	border: 1px solid var(--line, #ccc);
+	cursor: pointer;
+}
+button.place-choice:hover { background: #fff; border-color: #222; }
+button.place-choice strong { color: #111; }
