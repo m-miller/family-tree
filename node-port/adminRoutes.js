@@ -151,49 +151,91 @@ module.exports = function adminRoutes(invalidateTree) {
 
 	// ---------- the people list ----------
 
-	router.get('/', async (req, res, next) => {
-		try {
-			const trees = await db.query('SELECT * FROM trees ORDER BY id');
-			const treeId = Number(req.query.tree) || 0;
-			const search = String(req.query.q || '').trim();
-			const sort = SORTS[req.query.sort] ? req.query.sort : 'name';
-			const dir = req.query.dir === 'desc' ? 'DESC' : 'ASC';
-			const orderBy = SORTS[sort].replace(/%s/g, dir);
+router.get('/', async (req, res, next) => {
+	try {
+		const trees = await db.query('SELECT * FROM trees ORDER BY id');
 
-			const params = [];
-			let sql = 'SELECT p.*, t.slug AS tree_slug FROM people p JOIN trees t ON t.id = p.tree_id WHERE 1=1';
-			if (treeId) {
-				params.push(treeId);
-				sql += ` AND p.tree_id = $${params.length}`;
-			}
-			if (search) {
-				params.push('%' + search + '%');
+		const treeId = Number(req.query.tree) || 0;
+		const search = String(req.query.q || '').trim();
+
+		const searchBy = req.query.search_by === 'last' ? 'last' : 'first';
+
+		const sort = SORTS[req.query.sort] ? req.query.sort : 'name';
+		const dir = req.query.dir === 'desc' ? 'DESC' : 'ASC';
+		const orderBy = SORTS[sort].replace(/%s/g, dir);
+
+		const params = [];
+		let sql = `
+			SELECT p.*, t.slug AS tree_slug
+			FROM people p
+			JOIN trees t ON t.id = p.tree_id
+			WHERE 1=1
+		`;
+
+		if (treeId) {
+			params.push(treeId);
+			sql += ` AND p.tree_id = $${params.length}`;
+		}
+
+		if (search) {
+			params.push('%' + search + '%');
+
+			if (searchBy === 'last') {
+				sql += ` AND p.name ILIKE $${params.length}`;
+			} else {
 				sql += ` AND p.name ILIKE $${params.length}`;
 			}
-			sql += ` ORDER BY ${orderBy}, p.name`;
+		}
 
-			const all = await db.query(sql, params);
+		sql += ` ORDER BY ${orderBy}, p.name`;
 
-			// grouped by surname initial, in code so suffixes and accents behave
-			const letter = String(req.query.letter || '').slice(0, 1).toUpperCase();
-			const counts = {};
-			const people = [];
-			for (const person of all) {
-				const initial = surnameLetter(person.name);
-				counts[initial] = (counts[initial] || 0) + 1;
-				if (!letter || initial === letter) people.push(person);
+		const all = await db.query(sql, params);
+
+		// Determine which initial the A-Z filter should use.
+		function nameLetter(name, searchBy) {
+			const parts = String(name || '').trim().split(/\s+/);
+
+			if (searchBy === 'last') {
+				return (parts[parts.length - 1] || '').slice(0, 1).toUpperCase();
 			}
 
-			res.render('list', {
-				title: 'People',
-				trees, treeId, search, sort, dir, letter, counts,
-				total: people.length,
-				people: people.slice(0, 500)
-			});
-		} catch (err) {
-			next(err);
+			return (parts[0] || '').slice(0, 1).toUpperCase();
 		}
-	});
+
+
+		const letter = String(req.query.letter || '').slice(0, 1).toUpperCase();
+
+		const counts = {};
+		const people = [];
+
+		for (const person of all) {
+			const initial = nameLetter(person.name, searchBy);
+
+			counts[initial] = (counts[initial] || 0) + 1;
+
+			if (!letter || initial === letter) {
+				people.push(person);
+			}
+		}
+
+		res.render('list', {
+			title: 'People',
+			trees,
+			treeId,
+			search,
+			searchBy,
+			sort,
+			dir,
+			letter,
+			counts,
+			total: people.length,
+			people: people.slice(0, 500)
+		});
+	} catch (err) {
+		next(err);
+	}
+});
+
 
 	// ---------- one person ----------
 

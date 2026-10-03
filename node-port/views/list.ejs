@@ -1,19 +1,31 @@
 <%- include('layout-head') %>
 <%
 	// links that keep whatever filters are already on
-	function url(changes) {
-		const params = Object.assign({
-			tree: treeId || null,
-			q: search || null,
-			sort: sort !== 'name' ? sort : null,
-			dir: dir === 'DESC' ? 'desc' : null,
-			letter: letter || null
-		}, changes);
-		const parts = Object.entries(params)
-			.filter(function (pair) { return pair[1] !== null && pair[1] !== undefined && pair[1] !== ''; })
-			.map(function (pair) { return encodeURIComponent(pair[0]) + '=' + encodeURIComponent(pair[1]); });
-		return '/admin' + (parts.length ? '?' + parts.join('&') : '');
-	}
+function url(changes) {
+	const params = Object.assign({
+		tree: treeId || null,
+		q: search || null,
+		search_by: searchBy !== 'first' ? searchBy : null,
+		sort: sort !== 'name' ? sort : null,
+		dir: dir === 'DESC' ? 'desc' : null,
+		letter: letter || null
+	}, changes);
+
+	const parts = Object.entries(params)
+		.filter(function (pair) {
+			return pair[1] !== null &&
+				pair[1] !== undefined &&
+				pair[1] !== '';
+		})
+		.map(function (pair) {
+			return encodeURIComponent(pair[0]) +
+				'=' +
+				encodeURIComponent(pair[1]);
+		});
+
+	return '/admin' + (parts.length ? '?' + parts.join('&') : '');
+}
+
 	function sortLink(column, label) {
 		const isCurrent = column === sort;
 		const nextDir = (isCurrent && dir === 'ASC') ? 'desc' : 'asc';
@@ -36,9 +48,26 @@
 			<% }); %>
 		</select>
 	</label>
-	<label class="inline-label">Search
-		<input type="search" name="q" value="<%= search %>" placeholder="name">
-	</label>
+<label class="inline-label">Search by
+	<select name="search_by">
+		<option value="first" <%= searchBy === 'first' ? 'selected' : '' %>>
+			First name
+		</option>
+		<option value="last" <%= searchBy === 'last' ? 'selected' : '' %>>
+			Last name
+		</option>
+	</select>
+</label>
+
+<label class="inline-label">Search
+	<input
+		type="search"
+		name="q"
+		value="<%= search %>"
+		placeholder="<%= searchBy === 'last' ? 'last name' : 'first name' %>"
+	>
+</label>
+
 	<button type="submit">Go</button>
 </form>
 
@@ -53,7 +82,13 @@
 	<% }); %>
 </nav>
 
-<p class="count"><%= total %> people<%= letter ? ' with surnames beginning ' + letter : '' %><%= total > 500 ? ' (showing the first 500)' : '' %></p>
+<p class="count">
+	<%= total %> people
+	<%= letter
+		? ' with ' + (searchBy === 'last' ? 'last' : 'first') + ' names beginning ' + letter
+		: '' %>
+	<%= total > 500 ? ' (showing the first 500)' : '' %>
+</p>
 
 <table class="people">
 	<thead>
