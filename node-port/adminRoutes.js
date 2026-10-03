@@ -6,6 +6,7 @@ const express = require('express');
 const db = require('./db');
 const treeLib = require('./tree');
 const { attemptLogin, createUser, requireLogin, flash, takeFlashes } = require('./auth');
+const places = require('./places');
 
 // The person fields the form writes, so adding one means touching this list
 // and the template, and nothing else.
@@ -125,6 +126,16 @@ module.exports = function adminRoutes(invalidateTree) {
 	});
 
 	router.use(requireLogin);
+
+		// ---------- looking a place up ----------
+
+	router.get('/places', async (req, res, next) => {
+		try {
+			res.json(await places.lookup(req.query.q || ''));
+		} catch (err) {
+			next(err);
+		}
+	});
 
 	// ---------- the people list ----------
 
