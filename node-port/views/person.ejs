@@ -150,6 +150,7 @@
 				<%- field('Buried', 'buried', p.buried, 'wide') %>
 				<%- field('Cemetery map link (https://...)', 'buried_link', p.buried_link, 'wide') %>
 				<%- field('Find a Grave link (https://...)', 'buried_grave', p.buried_grave, 'wide') %>
+				<p></p>
 				<%- placeLookup('buried', 'burial_lat', 'burial_lng', p.burial_lat, p.burial_lng) %>
 				<%- textarea('Source', 'burial_source', p.burial_source) %>
 			</div>

@@ -236,9 +236,6 @@ nav.letters .letter.is-empty {
 	margin: 0;
 	font-size: .8rem;
 }
-.place-row label.coords input {
-	width: 8rem;
-}
 .place-results {
 	margin: .3rem 0 .6rem;
 	font-size: .8rem;
