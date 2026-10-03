@@ -341,6 +341,10 @@
 	});
 	new Pad().addTo(map);
 
+	document.getElementById('legend').innerHTML = ORDER.map(function (kind) {
+		return '<span><i style="background:' + COLOURS[kind] + '"></i>' + NAMES[kind] + '</span>';
+	}).join('');
+
 	filterBox.addEventListener('change', draw);
 
 	fetch('/places.json')
