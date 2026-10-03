@@ -43,7 +43,7 @@
 	function placeLookup(fields, latName, lngName, lat, lng) {
 		return '<div class="place-row">'
 			+ '<button type="button" class="place-lookup" data-fields="' + esc(fields)
-			+ '" data-lat="' + esc(latName) + '" data-lng="' + esc(lngName) + '">Look up on the map</button>'
+			+ '" data-lat="' + esc(latName) + '" data-lng="' + esc(lngName) + '">Map</button>'
 			+ '<label class="coords">Latitude<input type="text" name="' + esc(latName)
 			+ '" value="' + esc(lat == null ? '' : lat) + '" inputmode="decimal"></label>'
 			+ '<label class="coords">Longitude<input type="text" name="' + esc(lngName)
