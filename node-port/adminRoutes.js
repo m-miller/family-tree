@@ -5,8 +5,8 @@
 const express = require('express');
 const db = require('./db');
 const treeLib = require('./tree');
-const { attemptLogin, createUser, requireLogin, flash, takeFlashes } = require('./auth');
 const places = require('./places');
+const { attemptLogin, createUser, requireLogin, flash, takeFlashes } = require('./auth');
 
 // The person fields the form writes, so adding one means touching this list
 // and the template, and nothing else.
@@ -17,6 +17,18 @@ const PERSON_FIELDS = [
 	'death_state_province', 'death_zip_postal_code', 'death_country', 'death_source',
 	'buried', 'buried_link', 'buried_grave', 'notes', 'linked_tree'
 ];
+
+// Coordinates, filled in by the place lookup. Blank means "not placed yet",
+// which is different from 0,0 - hence null rather than a number.
+const COORDINATE_FIELDS = ['birth_lat', 'birth_lng', 'death_lat', 'death_lng',
+	'burial_lat', 'burial_lng'];
+
+function coordinate(req, key) {
+	const raw = post(req, key);
+	if (raw === '') return null;
+	const value = Number(raw);
+	return Number.isFinite(value) ? value : null;
+}
 
 const SORTS = {
 	name: 'p.name %s',
@@ -127,7 +139,7 @@ module.exports = function adminRoutes(invalidateTree) {
 
 	router.use(requireLogin);
 
-		// ---------- looking a place up ----------
+	// ---------- looking a place up ----------
 
 	router.get('/places', async (req, res, next) => {
 		try {
@@ -250,6 +262,7 @@ module.exports = function adminRoutes(invalidateTree) {
 
 			const values = {};
 			for (const field of PERSON_FIELDS) values[field] = post(req, field);
+			for (const field of COORDINATE_FIELDS) values[field] = coordinate(req, field);
 			values.name = values.name.replace(/^\*+/, '');
 
 			const treeId = existing ? existing.tree_id : Number(req.body.tree_id) || 0;
@@ -350,7 +363,6 @@ module.exports = function adminRoutes(invalidateTree) {
 		}
 	});
 
-	/** Add a whole generation above someone. */
 	/**
 	 * Add a whole generation above someone.
 	 *
@@ -530,6 +542,8 @@ module.exports = function adminRoutes(invalidateTree) {
 				married_city: post(req, 'married_city'),
 				married_state: post(req, 'married_state'),
 				married_source: post(req, 'married_source'),
+				married_lat: coordinate(req, 'married_lat'),
+				married_lng: coordinate(req, 'married_lng'),
 				spouse_id: spouseId
 			};
 
