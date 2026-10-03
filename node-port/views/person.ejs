@@ -203,6 +203,7 @@
 		<%- field('Place', 'married_place', m.married_place) %>
 		<%- field('City', 'married_city', m.married_city) %>
 		<%- field('State', 'married_state', m.married_state) %>
+		<%- placeLookup('married_place,married_city,married_state', 'married_lat', 'married_lng', m.married_lat, m.married_lng) %>
 		<%- textarea('Source', 'married_source', m.married_source) %>
 		<button type="submit">Save this marriage</button>
 		<button type="submit" formaction="/admin/person/<%= person.id %>/marriage/<%= m.id %>/delete"
@@ -227,6 +228,7 @@
 		<%- field('Place', 'married_place', '') %>
 		<%- field('City', 'married_city', '') %>
 		<%- field('State', 'married_state', '') %>
+		<%- placeLookup('married_place,married_city,married_state', 'married_lat', 'married_lng', '', '') %>
 		<%- textarea('Source', 'married_source', '') %>
 		<button type="submit">Add marriage</button>
 	</form>
