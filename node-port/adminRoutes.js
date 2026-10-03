@@ -68,6 +68,7 @@ module.exports = function adminRoutes(invalidateTree) {
 		res.locals.flashes = takeFlashes(req);
 		res.locals.user = req.session.user || null;
 		res.locals.path = req.path;
+		res.locals.listUrl = req.session.listUrl || '/admin';
 		next();
 	});
 
@@ -153,6 +154,7 @@ module.exports = function adminRoutes(invalidateTree) {
 
 router.get('/', async (req, res, next) => {
 	try {
+		req.session.listUrl = req.originalUrl;
 		const trees = await db.query('SELECT * FROM trees ORDER BY id');
 
 		const treeId = Number(req.query.tree) || 0;
@@ -678,7 +680,7 @@ router.get('/', async (req, res, next) => {
 			await db.query('DELETE FROM people WHERE id = $1', [id]);
 			flash(req, 'Deleted ' + person.name + '.');
 			invalidateTree();
-			res.redirect('/admin');
+			res.redirect(req.session.listUrl || '/admin');
 		} catch (err) {
 			next(err);
 		}

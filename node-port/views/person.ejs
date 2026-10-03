@@ -124,7 +124,7 @@
 	</fieldset>
 
 	<button type="submit"><%= person ? 'Save changes' : 'Add this person' %></button>
-	<a class="cancel" href="/admin">Back to the list</a>
+	<a class="cancel" href="<%= listUrl %>">Back to the list</a>
 </form>
 
 <% if (person) { %>
