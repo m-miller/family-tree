@@ -305,7 +305,7 @@ div > p {
 }
 
 /* names in the panel that go to that person's card */
-.info a.goto-person {
+.info a {
 	color: inherit;
 	text-decoration: underline;
 	cursor: pointer;
