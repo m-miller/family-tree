@@ -192,7 +192,12 @@
 		return html;
 	}
 
-	function draw() {
+	/**
+	 * Redraw the dots for the current filter. `refit` moves the view to fit them:
+	 * wanted when the page first loads, but not when you change the filter, so
+	 * you can flip between kinds of event and compare them in the same place.
+	 */
+	function draw(refit) {
 		var kind = filterBox.value;
 		var shown = events.filter(function (e) { return kind === 'all' || e.kind === kind; });
 		var spots = groupByPlace(shown);
@@ -220,14 +225,21 @@
 			return;
 		}
 
-		count.textContent = spots.length + (spots.length === 1 ? ' place, ' : ' places, ')
-			+ shown.length + (shown.length === 1 ? ' event' : ' events');
-
 		shownPoints = spots.map(function (spot) { return [spot.lat, spot.lng]; });
-		goHome();
+		if (refit) {
+			goHome();
+		}
+
+		// with the view left where it was, the new dots may all be off screen
+		var inView = refit || shownPoints.some(function (point) {
+			return map.getBounds().contains(point);
+		});
+		count.textContent = spots.length + (spots.length === 1 ? ' place, ' : ' places, ')
+			+ shown.length + (shown.length === 1 ? ' event' : ' events')
+			+ (inView ? '' : ' (none in this view: press the centre button)');
 	}
 
-	/** The view you get on loading, or when the filter changes: all the places shown. */
+	/** The view you get on loading, or from the centre button: all the places shown. */
 	function goHome() {
 		if (!shownPoints.length) {
 			map.setView([30, -20], 2);
@@ -356,7 +368,7 @@
 		return '<span><i style="background:' + COLOURS[kind] + '"></i>' + NAMES[kind] + '</span>';
 	}).join('');
 
-	filterBox.addEventListener('change', draw);
+	filterBox.addEventListener('change', function () { draw(false); });
 
 	fetch('/places.json')
 		.then(function (response) {
@@ -365,7 +377,7 @@
 		})
 		.then(function (data) {
 			events = data;
-			draw();
+			draw(true);
 		})
 		.catch(function () {
 			count.textContent = 'The places could not be loaded.';
