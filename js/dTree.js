@@ -20,6 +20,7 @@
  *    middle of the viewport, for the zoom buttons.
  *  - `panBy(dx, dy)` shifts the view by a number of pixels, for the pan
  *    arrows, keeping d3's own zoom state in sync.
+ *  - `startZoom` sets the scale the chart opens at; `resetZoom` returns to it.
  *  - `zoomToFit` measures the viewBox rather than the element's pixel size;
  *    mixing the two pushed the tree off centre on large windows.
  *  - Link paths carry `data-source` and `data-target` naming the nodes they
@@ -87,7 +88,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         var g = this.g = svg.append('g');
 
         // set zoom identity
-        svg.call(zoom.transform, d3.zoomIdentity.translate(width / 2, opts.margin.top).scale(1));
+        // added: the scale comes from opts.startZoom, so the page can open zoomed out
+        svg.call(zoom.transform, d3.zoomIdentity.translate(width / 2, opts.margin.top).scale(opts.startZoom));
 
         // Compute the layout.
         this.tree = d3.tree().nodeSize([nodeSize[0] * 2, opts.callbacks.nodeHeightSeperation.call(this, nodeSize[0], nodeSize[1])]);
@@ -469,6 +471,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           left: 0
         },
         nodeWidth: 100,
+        startZoom: 1,   // added: the scale the chart opens at, and resetZoom returns to
         marriageNodeSize: 10,
         styles: {
           node: 'node',
@@ -495,7 +498,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         resetZoom: function resetZoom() {
           var duration = arguments.length <= 0 || arguments[0] === undefined ? 500 : arguments[0];
 
-          treeBuilder.svg.transition().duration(duration).call(treeBuilder.zoom.transform, d3.zoomIdentity.translate(opts.width / 2, opts.margin.top).scale(1));
+          // added: back to the opening view, the same transform the chart starts with
+          var startWidth = opts.width + opts.margin.left + opts.margin.right;
+          treeBuilder.svg.transition().duration(duration).call(treeBuilder.zoom.transform, d3.zoomIdentity.translate(startWidth / 2, opts.margin.top).scale(opts.startZoom));
         },
         zoomTo: _zoomTo,
         // added: shift the view by a number of screen pixels, keeping d3's
@@ -517,8 +522,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
           var node = treeBuilder.svg.node();
           var current = d3.zoomTransform(node);
           var scale = Math.max(0.1, Math.min(10, current.k * factor));
-          var box = node.getBoundingClientRect();
-          var anchorX = (box.width || opts.width) / 2;
+          // The pivot is the middle of the viewBox, in the same units as the
+          // transform. (It used to be half the element's width in screen
+          // pixels, which slid the tree sideways on any window not 1200px wide.)
+          var anchorX = (opts.width + opts.margin.left + opts.margin.right) / 2;
           var anchorY = opts.margin.top;
           var ratio = scale / current.k;
           var transform = d3.zoomIdentity.translate(anchorX - (anchorX - current.x) * ratio, anchorY - (anchorY - current.y) * ratio).scale(scale);

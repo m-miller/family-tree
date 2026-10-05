@@ -262,6 +262,12 @@
 
 	// Laid out as a pad: up on top, left and right either side of the
 	// "back to the start" button, down below, then the zoom controls.
+	// One press of a zoom button changes the scale by this much, and the tree
+	// opens this many presses zoomed out from its natural size. The centre button
+	// returns to that opening view.
+	var ZOOM_STEP = 1.3;
+	var START_ZOOM_OUT_PRESSES = 4;
+
 	var CONTROLS = [
 		{ label: 'Scroll up (hold to go further)', icon: 'M3 10l5-5 5 5', hold: [0, 1], at: [2, 1] },
 		{ label: 'Scroll left (hold to go further)', icon: 'M10 3L5 8l5 5', hold: [1, 0], at: [1, 2] },
@@ -270,11 +276,11 @@
 		{ label: 'Scroll right (hold to go further)', icon: 'M6 3l5 5-5 5', hold: [-1, 0], at: [3, 2] },
 		{ label: 'Scroll down (hold to go further)', icon: 'M3 6l5 5 5-5', hold: [0, -1], at: [2, 3] },
 		{ label: 'Zoom out', icon: 'M3 8h10', at: [1, 4],
-		  action: function (tree) { tree.zoomBy(1 / 1.3); } },
+		  action: function (tree) { tree.zoomBy(1 / ZOOM_STEP); } },
 		{ label: 'Fit the whole tree', icon: 'M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4', at: [2, 4],
 		  action: function (tree) { tree.zoomToFit(); } },
 		{ label: 'Zoom in', icon: 'M8 3v10M3 8h10', at: [3, 4],
-		  action: function (tree) { tree.zoomBy(1.3); } },
+		  action: function (tree) { tree.zoomBy(ZOOM_STEP); } },
 		{ label: 'Switch chart', at: [2, 6], mode: true,
 		  markup: '<g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round">'
 			+ '<path d="M32 24v8"/><path d="M16 44V32h32v12"/></g>'
@@ -590,6 +596,7 @@
 			target: '#graph',
 			debug: false,
 			hideMarriageNodes: true,
+			startZoom: Math.pow(1 / ZOOM_STEP, START_ZOOM_OUT_PRESSES),
 			marriageNodeSize: 3,
 			height: 800,
 			width: 1200,
