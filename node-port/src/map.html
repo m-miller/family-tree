@@ -30,6 +30,14 @@
 	#map { flex: 1; min-height: 0; }
 
 	#legend { display: flex; gap: .9rem; }
+	#timescale { display: inline-flex; align-items: center; gap: .4rem; }
+	#timescale i {
+		display: inline-block;
+		width: 5rem;
+		height: .7rem;
+		border-radius: 3px;
+		border: 1px solid rgba(255, 255, 255, .8);
+	}
 	#legend span { display: inline-flex; align-items: center; gap: .3rem; }
 	#legend i {
 		display: inline-block;
@@ -50,6 +58,39 @@
 		box-shadow: 0 0 0 1px rgba(255, 255, 255, .7);
 	}
 
+	/* the navigation pad, the same as on the tree page */
+	.map-pad {
+		display: grid;
+		grid-template-columns: repeat(3, auto);
+		justify-items: center;
+		cursor: default;
+	}
+	.map-pad button {
+		width: 28px;
+		height: 28px;
+		margin: 2px;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: #fff;
+		border: none;
+		cursor: pointer;
+	}
+	.map-pad button.below-pad { margin-top: 12px; }
+	.map-pad button:hover { background: #222; }
+	.map-pad button:focus-visible { outline: 2px solid #045FB4; outline-offset: 1px; }
+	.map-pad svg {
+		width: 26px;
+		height: 26px;
+		stroke: #222;
+		stroke-width: 1.6;
+		stroke-linecap: round;
+		fill: none;
+		border: 1px solid #222;
+	}
+	.map-pad svg:hover { stroke: #fff; }
+
 	.leaflet-popup-content { max-height: 16rem; overflow-y: auto; font-size: .8rem; }
 	.leaflet-popup-content h3 { margin: 0 0 .3rem; font-size: .9rem; }
 	.leaflet-popup-content h4 { margin: .6rem 0 .1rem; font-size: .8rem; }
@@ -62,14 +103,15 @@
 	<a href="/">Back to the tree</a>
 	<label>Show
 		<select id="filter">
-			<option value="all">everything</option>
-			<option value="born">births</option>
-			<option value="died">deaths</option>
-			<option value="buried">burials</option>
-			<option value="married">marriages</option>
+			<option value="all">Everything</option>
+			<option value="born">Births</option>
+			<option value="died">Deaths</option>
+			<option value="buried">Burials</option>
+			<option value="married">Marriages</option>
 		</select>
 	</label>
 	<span id="legend"></span>
+	<span id="timescale"></span>
 	<span id="count"></span>
 </header>
 <div id="map"></div>
@@ -87,7 +129,51 @@
 	var COLOURS = { born: '#009E73', married: '#E69F00', died: '#CC79A7', buried: '#0072B2' };
 	var NAMES = { born: 'Born', married: 'Married', died: 'Died', buried: 'Buried' };
 
-	var map = L.map('map', { worldCopyJump: true }).setView([30, -20], 2);
+	// Older events darker, newer ones lighter. Each kind keeps its colour: it is
+	// mixed towards black for the oldest year on the map and towards white for
+	// the newest, by up to these amounts. Events with no year keep the plain colour.
+	var DARKEST = 0.5;
+	var LIGHTEST = 0.55;
+	var yearRange = null;   // { from, to } across every event loaded, whatever the filter
+
+	function mix(hex, toward, amount) {
+		var n = parseInt(hex.slice(1), 16);
+		var rgb = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+		return 'rgb(' + rgb.map(function (v, i) {
+			return Math.round(v + (toward[i] - v) * amount);
+		}).join(', ') + ')';
+	}
+
+	/** A colour darkened for an older year or lightened for a newer one. */
+	function shadeOf(hex, year) {
+		if (year == null || !yearRange || yearRange.to === yearRange.from) return hex;
+		var t = (year - yearRange.from) / (yearRange.to - yearRange.from);   // 0 oldest, 1 newest
+		return t < 0.5
+			? mix(hex, [0, 0, 0], (0.5 - t) * 2 * DARKEST)
+			: mix(hex, [255, 255, 255], (t - 0.5) * 2 * LIGHTEST);
+	}
+
+	function rangeOf(list) {
+		var years = list.map(function (e) { return e.year; })
+			.filter(function (y) { return typeof y === 'number'; });
+		return years.length ? { from: Math.min.apply(null, years), to: Math.max.apply(null, years) } : null;
+	}
+
+	/** "1780 [dark to light] 1999" beside the colour key. */
+	function showTimescale() {
+		var box = document.getElementById('timescale');
+		if (!yearRange || yearRange.to === yearRange.from) {
+			box.textContent = '';
+			return;
+		}
+		var grey = '#999999';
+		box.title = 'Older events are darker, newer ones lighter';
+		box.innerHTML = yearRange.from + '<i style="background: linear-gradient(to right, '
+			+ mix(grey, [0, 0, 0], DARKEST) + ', ' + grey + ', ' + mix(grey, [255, 255, 255], LIGHTEST)
+			+ ')"></i>' + yearRange.to;
+	}
+
+	var map = L.map('map', { worldCopyJump: true, zoomControl: false }).setView([30, -20], 2);
 	L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		maxZoom: 19,
 		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -95,6 +181,7 @@
 
 	var markers = L.layerGroup().addTo(map);
 	var events = [];
+	var shownPoints = [];   // the places currently on the map, for the starting view
 	var filterBox = document.getElementById('filter');
 	var count = document.getElementById('count');
 
@@ -117,17 +204,28 @@
 
 	/** A conic gradient with a slice for each kind of event, sized by how many. */
 	function pieFor(spot) {
-		var total = spot.events.length;
-		var used = 0;
-		var slices = [];
-		ORDER.forEach(function (kind) {
-			var n = spot.events.filter(function (e) { return e.kind === kind; }).length;
-			if (!n) return;
-			var from = used / total * 100;
-			used += n;
-			slices.push(COLOURS[kind] + ' ' + from.toFixed(2) + '% ' + (used / total * 100).toFixed(2) + '%');
+		// one slice per event, grouped by kind and running oldest to newest
+		var ordered = spot.events.slice().sort(function (a, b) {
+			var byKind = ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind);
+			if (byKind) return byKind;
+			if (a.year == null) return b.year == null ? 0 : 1;   // no year: last in its kind
+			if (b.year == null) return -1;
+			return a.year - b.year;
+		});
+		var total = ordered.length;
+		var slices = ordered.map(function (e, i) {
+			return shadeOf(COLOURS[e.kind], e.year) + ' ' + (i / total * 100).toFixed(2) + '% '
+				+ ((i + 1) / total * 100).toFixed(2) + '%';
 		});
 		return 'conic-gradient(' + slices.join(', ') + ')';
+	}
+
+	// where each tree lives, so a name can link to the right page
+	var TREE_PAGES = { miller: '/', horne: '/Horne.html' };
+
+	function personLink(id, name, tree) {
+		return '<a href="' + (TREE_PAGES[tree] || '/') + '?person=' + Number(id)
+			+ '" title="Show in the tree">' + esc(name) + '</a>';
 	}
 
 	function popupFor(spot) {
@@ -141,13 +239,21 @@
 			if (!here.length) return;
 			html += '<h4>' + LABELS[kind] + '</h4><ul>' + here.map(function (e) {
 				var dated = e.date && !/^unknown$/i.test(e.date);
-				return '<li>' + esc(e.name) + (dated ? ' (' + esc(e.date) + ')' : '') + '</li>';
+				// a marriage names two people; each goes to their own card
+				var who = personLink(e.id, e.name, e.tree)
+					+ (e.name2 ? ' &amp; ' + personLink(e.id2, e.name2, e.tree) : '');
+				return '<li>' + who + (dated ? ' (' + esc(e.date) + ')' : '') + '</li>';
 			}).join('') + '</ul>';
 		});
 		return html;
 	}
 
-	function draw() {
+	/**
+	 * Redraw the dots for the current filter. `refit` moves the view to fit them:
+	 * wanted when the page first loads, but not when you change the filter, so
+	 * you can flip between kinds of event and compare them in the same place.
+	 */
+	function draw(refit) {
 		var kind = filterBox.value;
 		var shown = events.filter(function (e) { return kind === 'all' || e.kind === kind; });
 		var spots = groupByPlace(shown);
@@ -168,28 +274,157 @@
 		});
 
 		if (!spots.length) {
+			shownPoints = [];
 			count.textContent = events.length
 				? 'Nothing of that kind has coordinates yet.'
 				: 'No places have coordinates yet. Add them from a person\u2019s page in the admin.';
 			return;
 		}
 
-		count.textContent = spots.length + (spots.length === 1 ? ' place, ' : ' places, ')
-			+ shown.length + (shown.length === 1 ? ' event' : ' events');
+		shownPoints = spots.map(function (spot) { return [spot.lat, spot.lng]; });
+		if (refit) {
+			goHome();
+		}
 
-		var points = spots.map(function (spot) { return [spot.lat, spot.lng]; });
-		if (points.length === 1) {
-			map.setView(points[0], 9);
+		// with the view left where it was, the new dots may all be off screen
+		var inView = refit || shownPoints.some(function (point) {
+			return map.getBounds().contains(point);
+		});
+		count.textContent = spots.length + (spots.length === 1 ? ' place, ' : ' places, ')
+			+ shown.length + (shown.length === 1 ? ' event' : ' events')
+			+ (inView ? '' : ' (none in this view: press the centre button)');
+	}
+
+	/** The view you get on loading, or from the centre button: all the places shown. */
+	function goHome() {
+		if (!shownPoints.length) {
+			map.setView([30, -20], 2);
+		} else if (shownPoints.length === 1) {
+			map.setView(shownPoints[0], 9);
 		} else {
-			map.fitBounds(points, { padding: [40, 40] });
+			map.fitBounds(shownPoints, { padding: [40, 40] });
 		}
 	}
+
+	// ---------- the navigation pad, as on the tree page ----------
+
+	// Arrow speed while held: gentle at first, full speed after about a second,
+	// in pixels per frame, then a coast to a stop on release.
+	var PAN_START = 4;
+	var PAN_TOP = 34;
+	var PAN_RAMP = 1000;
+	var PAN_GLIDE = 0.88;
+
+	var CONTROLS = [
+		{ label: 'Scroll up (hold to go further)', icon: 'M3 10l5-5 5 5', hold: [0, 1], at: [2, 1] },
+		{ label: 'Scroll left (hold to go further)', icon: 'M10 3L5 8l5 5', hold: [1, 0], at: [1, 2] },
+		{ label: 'Back to the starting view', icon: 'M8 2v12M2 8h12', circle: true, at: [2, 2],
+		  action: function () { goHome(); } },
+		{ label: 'Scroll right (hold to go further)', icon: 'M6 3l5 5-5 5', hold: [-1, 0], at: [3, 2] },
+		{ label: 'Scroll down (hold to go further)', icon: 'M3 6l5 5 5-5', hold: [0, -1], at: [2, 3] },
+		{ label: 'Zoom out', icon: 'M3 8h10', at: [1, 4], action: function () { map.zoomOut(); } },
+		{ label: 'Show the whole world', icon: 'M2 6V2h4M14 6V2h-4M2 10v4h4M14 10v4h-4', at: [2, 4],
+		  action: function () { map.fitWorld(); } },
+		{ label: 'Zoom in', icon: 'M8 3v10M3 8h10', at: [3, 4], action: function () { map.zoomIn(); } }
+	];
+
+	/** Move the view by a number of screen pixels, the way the tree's panBy does. */
+	var panner = {
+		panBy: function (dx, dy) {
+			// the tree shifts its content; Leaflet moves the view, so the sign flips
+			map.panBy([-dx, -dy], { animate: false });
+		}
+	};
+
+	/** An arrow that pans while held, faster the longer it is held. */
+	function addHoldToPan(button, direction) {
+		var frame = null;
+		var startedAt = 0;
+		var speed = 0;
+		var gliding = false;
+
+		function step() {
+			var ramp = Math.min(1, (Date.now() - startedAt) / PAN_RAMP);
+			speed = PAN_START + (PAN_TOP - PAN_START) * ramp * ramp;
+			panner.panBy(direction[0] * speed, direction[1] * speed);
+			frame = requestAnimationFrame(step);
+		}
+
+		// after the button is let go, carry on and slow to a halt
+		function glide() {
+			speed *= PAN_GLIDE;
+			if (speed < 0.4) {
+				frame = null;
+				gliding = false;
+				return;
+			}
+			panner.panBy(direction[0] * speed, direction[1] * speed);
+			frame = requestAnimationFrame(glide);
+		}
+
+		function start(event) {
+			if (frame !== null && !gliding) return;
+			if (frame !== null) cancelAnimationFrame(frame);   // cut a glide short
+			event.preventDefault();
+			gliding = false;
+			startedAt = Date.now();
+			step();
+		}
+
+		function stop() {
+			if (frame === null || gliding) return;
+			cancelAnimationFrame(frame);
+			gliding = true;
+			frame = requestAnimationFrame(glide);
+		}
+
+		button.addEventListener('mousedown', start);
+		button.addEventListener('touchstart', start, { passive: false });
+		['mouseup', 'mouseleave', 'touchend', 'touchcancel', 'blur'].forEach(function (name) {
+			button.addEventListener(name, stop);
+		});
+		window.addEventListener('mouseup', stop);
+
+		// keyboard: space or enter arrives as a click
+		button.addEventListener('click', function () {
+			if (frame === null) panner.panBy(direction[0] * 60, direction[1] * 60);
+		});
+	}
+
+	var Pad = L.Control.extend({
+		options: { position: 'topleft' },
+		onAdd: function () {
+			var bar = L.DomUtil.create('div', 'leaflet-control map-pad');
+			// presses on the pad must not drag, or double-click zoom, the map beneath
+			L.DomEvent.disableClickPropagation(bar);
+			L.DomEvent.disableScrollPropagation(bar);
+
+			CONTROLS.forEach(function (control) {
+				var button = L.DomUtil.create('button', control.at[1] === 4 ? 'below-pad' : '', bar);
+				button.type = 'button';
+				button.title = control.label;
+				button.setAttribute('aria-label', control.label);
+				button.style.gridColumn = control.at[0];
+				button.style.gridRow = control.at[1];
+				button.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
+					+ (control.circle ? '<circle cx="8" cy="8" r="5"></circle>' : '')
+					+ '<path d="' + control.icon + '"></path></svg>';
+				if (control.hold) {
+					addHoldToPan(button, control.hold);
+				} else {
+					button.addEventListener('click', control.action);
+				}
+			});
+			return bar;
+		}
+	});
+	new Pad().addTo(map);
 
 	document.getElementById('legend').innerHTML = ORDER.map(function (kind) {
 		return '<span><i style="background:' + COLOURS[kind] + '"></i>' + NAMES[kind] + '</span>';
 	}).join('');
 
-	filterBox.addEventListener('change', draw);
+	filterBox.addEventListener('change', function () { draw(false); });
 
 	fetch('/places.json')
 		.then(function (response) {
@@ -198,7 +433,9 @@
 		})
 		.then(function (data) {
 			events = data;
-			draw();
+			yearRange = rangeOf(data);
+			showTimescale();
+			draw(true);
 		})
 		.catch(function () {
 			count.textContent = 'The places could not be loaded.';
