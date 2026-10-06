@@ -57,6 +57,8 @@
 		box-sizing: border-box;
 		box-shadow: 0 0 0 1px rgba(255, 255, 255, .7);
 	}
+	.pie span { overflow: hidden; }
+	.pie span svg { display: block; width: 100%; height: 100%; }
 
 	/* the navigation pad, the same as on the tree page */
 	.map-pad {
@@ -202,9 +204,15 @@
 		return Object.keys(spots).map(function (key) { return spots[key]; });
 	}
 
-	/** A conic gradient with a slice for each kind of event, sized by how many. */
-	function pieFor(spot) {
-		// one slice per event, grouped by kind and running oldest to newest
+	// The black line between slices, in screen pixels whatever the dot's size.
+	var DIVIDER = 1;
+
+	/**
+	 * A dot as a small SVG pie: one slice per event, grouped by kind and running
+	 * clockwise from the top, oldest to newest, with a black line between slices.
+	 * (A CSS gradient can't draw an even line: it tapers to nothing at the centre.)
+	 */
+	function pieSvg(spot) {
 		var ordered = spot.events.slice().sort(function (a, b) {
 			var byKind = ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind);
 			if (byKind) return byKind;
@@ -212,12 +220,25 @@
 			if (b.year == null) return -1;
 			return a.year - b.year;
 		});
-		var total = ordered.length;
-		var slices = ordered.map(function (e, i) {
-			return shadeOf(COLOURS[e.kind], e.year) + ' ' + (i / total * 100).toFixed(2) + '% '
-				+ ((i + 1) / total * 100).toFixed(2) + '%';
-		});
-		return 'conic-gradient(' + slices.join(', ') + ')';
+		var fills = ordered.map(function (e) { return shadeOf(COLOURS[e.kind], e.year); });
+		var svg = '<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">';
+		if (fills.length === 1) {
+			return svg + '<circle cx="50" cy="50" r="50" fill="' + fills[0] + '"></circle></svg>';
+		}
+
+		// a point on the rim, `turn` of the way round clockwise from the top
+		function rim(turn) {
+			var angle = turn * 2 * Math.PI;
+			return (50 + 50 * Math.sin(angle)).toFixed(3) + ' ' + (50 - 50 * Math.cos(angle)).toFixed(3);
+		}
+		var total = fills.length;
+		var slices = fills.map(function (fill, i) {
+			return '<path d="M50 50 L' + rim(i / total) + ' A50 50 0 0 1 ' + rim((i + 1) / total)
+				+ ' Z" fill="' + fill + '"></path>';
+		}).join('');
+		var lines = fills.map(function (fill, i) { return 'M50 50 L' + rim(i / total); }).join(' ');
+		return svg + slices + '<path d="' + lines + '" fill="none" stroke="#111" stroke-width="' + DIVIDER
+			+ '" vector-effect="non-scaling-stroke"></path></svg>';
 	}
 
 	// where each tree lives, so a name can link to the right page
@@ -264,7 +285,7 @@
 			L.marker([spot.lat, spot.lng], {
 				icon: L.divIcon({
 					className: 'pie',
-					html: '<span style="background:' + pieFor(spot) + '"></span>',
+					html: '<span>' + pieSvg(spot) + '</span>',
 					iconSize: [size, size],
 					popupAnchor: [0, -size / 2]
 				}),
