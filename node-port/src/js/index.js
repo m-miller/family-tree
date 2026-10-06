@@ -158,7 +158,10 @@
 			part(e.death_country, '<br />') +
 			part(e.death_source, '<br /><span class="source">Source: ', '</span>') +
 			// burial
-			part(e.buried, '<br />Buried: ') +
+			// with a burial date, the place goes on its own "At:" line, as for a death
+			(has(e.burial_date)
+				? part(e.burial_date, '<br />Buried: ') + part(e.buried, '<br />At: ')
+				: part(e.buried, '<br />Buried: ')) +
 			externalLink(e.buried_link, 'Cemetery Map') +
 			externalLink(e.buried_grave, 'Find a Grave') +
 			part(e.notes, '<hr />Notes: ') +
