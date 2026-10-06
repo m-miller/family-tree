@@ -100,6 +100,7 @@ function extraFor(person, marriage, spouseName, spouseId) {
 		buried_link: person.buried_link,
 		buried_grave: person.buried_grave,
 		burial_source: person.burial_source,
+		burial_date: person.burial_date_text,
 		notes: person.notes,
 		link: person.linked_tree
 	};

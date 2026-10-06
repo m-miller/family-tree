@@ -110,9 +110,9 @@ app.get('/places.json', async (req, res, next) => {
 			  FROM people p JOIN trees t ON t.id = p.tree_id
 			 WHERE p.death_lat IS NOT NULL AND p.death_lng IS NOT NULL
 			UNION ALL
-			SELECT p.id, p.name, 'buried', '', p.buried, p.burial_lat, p.burial_lng,
+			SELECT p.id, p.name, 'buried', p.burial_date_text, p.buried, p.burial_lat, p.burial_lng,
 			       t.slug, NULL::text, NULL::int,
-			       p.death_year   -- burials have no date of their own; the death year stands in
+			       COALESCE(p.burial_year, p.death_year)   -- the burial's own year, else the death year
 			  FROM people p JOIN trees t ON t.id = p.tree_id
 			 WHERE p.burial_lat IS NOT NULL AND p.burial_lng IS NOT NULL
 			UNION ALL

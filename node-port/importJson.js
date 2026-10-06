@@ -34,6 +34,7 @@ function personColumns(node, treeId) {
 
 	const birth = parseDate(extra.birthdate);
 	const death = parseDate(extra.deathdate);
+	const burial = parseDate(extra.burial_date);
 
 	return {
 		tree_id: treeId,
@@ -65,6 +66,8 @@ function personColumns(node, treeId) {
 		buried_link: extra.buried_link || '',
 		buried_grave: extra.buried_grave || '',
 		burial_source: extra.burial_source || '',
+		burial_date_text: extra.burial_date || '',
+		burial_year: burial.year, burial_month: burial.month, burial_day: burial.day,
 		notes: extra.notes || '',
 		linked_tree: extra.link || ''
 	};

@@ -327,6 +327,8 @@ router.get('/', async (req, res, next) => {
 				[death.year, death.month || 0, death.day || 0] < [birth.year, birth.month || 0, birth.day || 0]) {
 				flash(req, 'Saved, but the death date is before the birth date.', 'warn');
 			}
+			const burialText = post(req, 'burial_date_text');
+			const burial = treeLib.parseDate(burialText);
 
 			Object.assign(values, {
 				tree_id: treeId,
@@ -336,7 +338,9 @@ router.get('/', async (req, res, next) => {
 				birth_date_text: birthText,
 				birth_year: birth.year, birth_month: birth.month, birth_day: birth.day,
 				death_date_text: deathText,
-				death_year: death.year, death_month: death.month, death_day: death.day
+				death_year: death.year, death_month: death.month, death_day: death.day,
+				burial_date_text: burialText,
+				burial_year: burial.year, burial_month: burial.month, burial_day: burial.day
 			});
 
 			const columns = Object.keys(values);
@@ -357,6 +361,7 @@ router.get('/', async (req, res, next) => {
 
 			warnUnparsedDate(req, 'The birth date', birthText);
 			warnUnparsedDate(req, 'The death date', deathText);
+			warnUnparsedDate(req, 'The burial date', burialText);
 			invalidateTree();
 			res.redirect(`/admin/person/${savedId}`);
 		} catch (err) {

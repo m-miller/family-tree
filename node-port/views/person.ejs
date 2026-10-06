@@ -7,7 +7,7 @@
 		birth_source: '', death_date_text: '', deathplace_name: '', death_address1: '',
 		death_address2: '', death_city: '', death_state_province: '', death_zip_postal_code: '',
 		death_country: '', death_source: '', buried: '', buried_link: '', buried_grave: '', notes: '',
-		birth_lat: '', birth_lng: '', death_lat: '', death_lng: '', burial_lat: '', burial_lng: '', burial_source: ''
+		birth_lat: '', birth_lng: '', death_lat: '', death_lng: '', burial_lat: '', burial_lng: '', burial_source: '', burial_date_text: ''
 	};
 	let dateId = 0;
 	function esc(v) {
@@ -147,6 +147,7 @@
 		<fieldset class="card">
 			<legend>Burial</legend>
 			<div class="fields">
+				<%- dateField('Date', 'burial_date_text', p.burial_date_text, DATE_HINT) %>
 				<%- field('Buried', 'buried', p.buried, 'wide') %>
 				<%- field('Cemetery map link (https://...)', 'buried_link', p.buried_link, 'wide') %>
 				<%- field('Find a Grave link (https://...)', 'buried_grave', p.buried_grave, 'wide') %>
