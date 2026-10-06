@@ -99,26 +99,27 @@ app.get('/places.json', async (req, res, next) => {
 			       concat_ws(', ', NULLIF(p.birthplace_name, ''), NULLIF(p.birth_city, ''),
 			                 NULLIF(p.birth_state_province, ''), NULLIF(p.birth_country, '')) AS place,
 			       p.birth_lat AS lat, p.birth_lng AS lng,
-			       t.slug AS tree, NULL::text AS name2, NULL::int AS id2
+			       t.slug AS tree, NULL::text AS name2, NULL::int AS id2, p.birth_year AS year
 			  FROM people p JOIN trees t ON t.id = p.tree_id
 			 WHERE p.birth_lat IS NOT NULL AND p.birth_lng IS NOT NULL
 			UNION ALL
 			SELECT p.id, p.name, 'died', p.death_date_text,
 			       concat_ws(', ', NULLIF(p.deathplace_name, ''), NULLIF(p.death_city, ''),
 			                 NULLIF(p.death_state_province, ''), NULLIF(p.death_country, '')),
-			       p.death_lat, p.death_lng, t.slug, NULL::text, NULL::int
+			       p.death_lat, p.death_lng, t.slug, NULL::text, NULL::int, p.death_year
 			  FROM people p JOIN trees t ON t.id = p.tree_id
 			 WHERE p.death_lat IS NOT NULL AND p.death_lng IS NOT NULL
 			UNION ALL
 			SELECT p.id, p.name, 'buried', '', p.buried, p.burial_lat, p.burial_lng,
-			       t.slug, NULL::text, NULL::int
+			       t.slug, NULL::text, NULL::int,
+			       p.death_year   -- burials have no date of their own; the death year stands in
 			  FROM people p JOIN trees t ON t.id = p.tree_id
 			 WHERE p.burial_lat IS NOT NULL AND p.burial_lng IS NOT NULL
 			UNION ALL
 			SELECT m.person_id, a.name, 'married', m.married_date_text,
 			       concat_ws(', ', NULLIF(m.married_place, ''), NULLIF(m.married_city, ''),
 			                 NULLIF(m.married_state, '')),
-			       m.married_lat, m.married_lng, t.slug, b.name, m.spouse_id
+			       m.married_lat, m.married_lng, t.slug, b.name, m.spouse_id, m.married_year
 			  FROM marriages m
 			  JOIN people a ON a.id = m.person_id
 			  JOIN people b ON b.id = m.spouse_id
@@ -129,7 +130,8 @@ app.get('/places.json', async (req, res, next) => {
 		res.json(rows.map((r) => ({
 			id: r.id, name: r.name, kind: r.kind, date: r.date_text, place: r.place,
 			lat: Number(r.lat), lng: Number(r.lng),
-			tree: r.tree, name2: r.name2, id2: r.id2
+			tree: r.tree, name2: r.name2, id2: r.id2,
+			year: r.year == null ? null : Number(r.year)
 		})));
 	} catch (err) {
 		next(err);

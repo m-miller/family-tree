@@ -30,6 +30,14 @@
 	#map { flex: 1; min-height: 0; }
 
 	#legend { display: flex; gap: .9rem; }
+	#timescale { display: inline-flex; align-items: center; gap: .4rem; }
+	#timescale i {
+		display: inline-block;
+		width: 5rem;
+		height: .7rem;
+		border-radius: 3px;
+		border: 1px solid rgba(255, 255, 255, .8);
+	}
 	#legend span { display: inline-flex; align-items: center; gap: .3rem; }
 	#legend i {
 		display: inline-block;
@@ -103,6 +111,7 @@
 		</select>
 	</label>
 	<span id="legend"></span>
+	<span id="timescale"></span>
 	<span id="count"></span>
 </header>
 <div id="map"></div>
@@ -119,6 +128,50 @@
 	// kinds of colour blindness; change them here and the key follows.
 	var COLOURS = { born: '#009E73', married: '#E69F00', died: '#CC79A7', buried: '#0072B2' };
 	var NAMES = { born: 'Born', married: 'Married', died: 'Died', buried: 'Buried' };
+
+	// Older events darker, newer ones lighter. Each kind keeps its colour: it is
+	// mixed towards black for the oldest year on the map and towards white for
+	// the newest, by up to these amounts. Events with no year keep the plain colour.
+	var DARKEST = 0.5;
+	var LIGHTEST = 0.55;
+	var yearRange = null;   // { from, to } across every event loaded, whatever the filter
+
+	function mix(hex, toward, amount) {
+		var n = parseInt(hex.slice(1), 16);
+		var rgb = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+		return 'rgb(' + rgb.map(function (v, i) {
+			return Math.round(v + (toward[i] - v) * amount);
+		}).join(', ') + ')';
+	}
+
+	/** A colour darkened for an older year or lightened for a newer one. */
+	function shadeOf(hex, year) {
+		if (year == null || !yearRange || yearRange.to === yearRange.from) return hex;
+		var t = (year - yearRange.from) / (yearRange.to - yearRange.from);   // 0 oldest, 1 newest
+		return t < 0.5
+			? mix(hex, [0, 0, 0], (0.5 - t) * 2 * DARKEST)
+			: mix(hex, [255, 255, 255], (t - 0.5) * 2 * LIGHTEST);
+	}
+
+	function rangeOf(list) {
+		var years = list.map(function (e) { return e.year; })
+			.filter(function (y) { return typeof y === 'number'; });
+		return years.length ? { from: Math.min.apply(null, years), to: Math.max.apply(null, years) } : null;
+	}
+
+	/** "1780 [dark to light] 1999" beside the colour key. */
+	function showTimescale() {
+		var box = document.getElementById('timescale');
+		if (!yearRange || yearRange.to === yearRange.from) {
+			box.textContent = '';
+			return;
+		}
+		var grey = '#999999';
+		box.title = 'Older events are darker, newer ones lighter';
+		box.innerHTML = yearRange.from + '<i style="background: linear-gradient(to right, '
+			+ mix(grey, [0, 0, 0], DARKEST) + ', ' + grey + ', ' + mix(grey, [255, 255, 255], LIGHTEST)
+			+ ')"></i>' + yearRange.to;
+	}
 
 	var map = L.map('map', { worldCopyJump: true, zoomControl: false }).setView([30, -20], 2);
 	L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -151,15 +204,18 @@
 
 	/** A conic gradient with a slice for each kind of event, sized by how many. */
 	function pieFor(spot) {
-		var total = spot.events.length;
-		var used = 0;
-		var slices = [];
-		ORDER.forEach(function (kind) {
-			var n = spot.events.filter(function (e) { return e.kind === kind; }).length;
-			if (!n) return;
-			var from = used / total * 100;
-			used += n;
-			slices.push(COLOURS[kind] + ' ' + from.toFixed(2) + '% ' + (used / total * 100).toFixed(2) + '%');
+		// one slice per event, grouped by kind and running oldest to newest
+		var ordered = spot.events.slice().sort(function (a, b) {
+			var byKind = ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind);
+			if (byKind) return byKind;
+			if (a.year == null) return b.year == null ? 0 : 1;   // no year: last in its kind
+			if (b.year == null) return -1;
+			return a.year - b.year;
+		});
+		var total = ordered.length;
+		var slices = ordered.map(function (e, i) {
+			return shadeOf(COLOURS[e.kind], e.year) + ' ' + (i / total * 100).toFixed(2) + '% '
+				+ ((i + 1) / total * 100).toFixed(2) + '%';
 		});
 		return 'conic-gradient(' + slices.join(', ') + ')';
 	}
@@ -377,6 +433,8 @@
 		})
 		.then(function (data) {
 			events = data;
+			yearRange = rangeOf(data);
+			showTimescale();
 			draw(true);
 		})
 		.catch(function () {
