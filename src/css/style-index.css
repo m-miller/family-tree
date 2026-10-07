@@ -326,3 +326,42 @@ div > p {
 	font-size: .85rem;
 	text-align: center;
 }
+/* the overview of the whole tree, bottom right */
+.minimap {
+	position: fixed;
+	right: 16px;
+	bottom: 16px;
+	z-index: 20;
+	width: 300px;
+	background: rgba(255, 255, 255, .95);
+	border: 1px solid #444;
+	border-radius: 6px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+	overflow: hidden;
+	cursor: pointer;
+	touch-action: none;     /* dragging on it moves the chart, not the page */
+}
+.minimap svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+.minimap .m-lines path {
+	fill: none;
+	stroke: #666;
+	stroke-width: .6px;
+	vector-effect: non-scaling-stroke;
+}
+/* the card colours, a shade deeper so they show at this size */
+.minimap .m-man     { fill: color-mix(in srgb, var(--man-color) 75%, black); }
+.minimap .m-woman   { fill: color-mix(in srgb, var(--woman-color) 75%, black); }
+.minimap .m-unknown { fill: color-mix(in srgb, hsl(210, 45%, 85%) 75%, black); }
+.minimap .m-view {
+	fill: rgba(4, 95, 180, .12);
+	stroke: #045FB4;
+	stroke-width: 1.5px;
+	vector-effect: non-scaling-stroke;
+}
+@media (max-width: 700px) {
+	.minimap { width: 180px; }
+}

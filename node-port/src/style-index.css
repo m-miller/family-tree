@@ -1,11 +1,30 @@
+:root {
+	--man-color: hsl(0, 0%, 83%);
+	--man-color-text: #222;
+	--man-color-mix: black;
+	--woman-color: hsl(120, 73%, 75%);
+	--woman-color-text: #222;
+	--woman-color-mix: black;
+}
+
+.man         { background-color: var(--man-color); color: var(--man-color-text); border: 1px solid #222; }
+.man:hover   { background-color: color-mix(in srgb, var(--man-color) 90%, var(--man-color-mix)); }
+.woman       { background-color: var(--woman-color); color: var(--woman-color-text); border: 1px solid #222; }
+.woman:hover { background-color: color-mix(in srgb, var(--woman-color) 90%, var(--woman-color-mix)); }
+.info-man    { background-color: var(--man-color); color: var(--man-color-text); }
+.info-woman  { background-color: var(--woman-color); color: var(--woman-color-text); }
+
 body {
 	font: 1rem sans-serif;
-	background-color: black;
+	background-color: #222;
 }
 
 h1 {
 	padding-top: .5rem;
 	color: white;
+	display: inline;
+	position: relative;
+	top: -1rem;
 }
 #graph {
 	position: relative;
@@ -16,11 +35,7 @@ h1 {
 #graph:active {
 	cursor: grabbing;
 }
-#graph svg {
-	display: block;
-	width: 100%;
-	height: calc(100vh - 140px);   /* whatever the header actually needs */
-}
+
 .nodeText {
 	text-align: center;
 }
@@ -30,10 +45,10 @@ h1 {
 }
 .marriage {
 	fill: none;
-	stroke: black;
+	stroke: #222;
 }
 .marriageNode {
-	background-color: black;
+	background-color: #222;
 	border-radius: 50%;
 }
 .nthMarriage {
@@ -42,23 +57,10 @@ h1 {
 	stroke-width: 1px;
 	stroke-dasharray: 3,3;
 }
-.man {
-	background-color: hsl(0, 0%, 83%);
-	border: 1px solid black;
-}
-.man:hover {
-	background-color: hsl(0, 0%, 63%);
-}
-.woman {
-	background-color: hsl(120, 73%, 75%);
-	border: 1px solid black;
-}
-.woman:hover {
-	background-color: hsl(120, 73%, 55%);
-}
+
 .unknown {
 	background-color: hsl(210, 45%, 85%);
-	border: 1px solid black;
+	border: 1px solid #222;
 }
 .unknown:hover {
 	background-color: hsl(210, 45%, 65%);
@@ -66,10 +68,7 @@ h1 {
 .emphasis{
 	font-style: italic;
 }
-svg {
-	border-style: solid;
-	border-width: 1px;
-}
+
 foreignObject {
 	cursor: pointer;
 	/* No height here: in SVG2 this is a CSS property and would override the
@@ -94,8 +93,17 @@ div > p {
 	position: sticky;
 	top: 0;
 	z-index: 3;
-	background-color: black;
-	margin-top: 0;
+	background-color: #222;
+	padding-bottom: 0.5rem;
+}
+#head-info p {
+	margin: 1rem 0 1rem 1rem;
+}
+.site-icon {
+	width: 64px; 
+	height: 64px;
+	margin: 1rem 1rem 0 1rem;
+	border: none;
 }
 #head-info a {
 	text-decoration-style: underline;
@@ -116,43 +124,40 @@ div > p {
 	height: auto;
 	position: absolute;
 	padding: 1rem;
-	top: 20px;
+	top: 1rem;
 	left: 140px;
-	border: 1px solid black;
+	border: 1px solid #222;
 	border-radius: 10px;
 	font-size: .9rem;
 }
+.nodeText {
+	pointer-events: none;
+}
 #close {
 	position: absolute;
-	color: black;
+	color: #222;
 	top: -11px;
 	right: -11px;
 	width: 20px;
 	height: 20px;
 	background-color: white;
 	border-radius: 10px;
-	border: 1px solid black;
+	border: 1px solid #222;
 	cursor:pointer;
 	font-size: 1.75rem;
 	line-height: .6;
 	text-align: center;
 }
-/* info panel colours (match the node hover colours) */
-.info-man {
-	background-color: hsl(0, 6%, 80%);
-}
-.info-woman {
-	background-color: hsl(120, 77%, 82%);
-}
+
 .info-unknown {
 	background-color: hsl(210, 45%, 65%);
 }
 
 /* zoom controls, bottom right of the tree */
 .zoom-controls {
-	position: absolute;
+	position: fixed;
 	left: 20px;
-	top: 20px;
+	top: 200px;
 	display: grid;
 	grid-template-columns: repeat(3, auto);
 	justify-items: center;
@@ -164,35 +169,48 @@ div > p {
 	margin-top: 10px;
 }
 .zoom-controls button {
-	width: 34px;
-	height: 34px;
+	width: 28px;
+	height: 28px;
+	margin: 2px;
 	padding: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: rgba(255, 255, 255, .9);
+	background: rgba(255, 255, 255, 1);
 	border: none;
 	cursor: pointer;
 }
 .zoom-controls button:hover {
-	background: #fff;
+	background: #222;
 }
+
+
+
 .zoom-controls button:focus-visible {
 	outline: 2px solid #045FB4;
 	outline-offset: 1px;
 }
-.zoom-controls svg {
-	width: 26px;
-	height: 26px;
-	stroke: #222;
-	stroke-width: 1.6;
-	stroke-linecap: round;
-	fill: none;
+
+.zoom-controls .color-picker {
+	width: 28px;
+	height: 28px;
+	padding: 2px;
+	margin-top: 10px;
+	border: 1px solid #222;
+	border-radius: 4px;
+	background: rgba(255, 255, 255, 1);
+	cursor: pointer;
 }
+.zoom-controls .color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+.zoom-controls .color-picker::-webkit-color-swatch { border: none; border-radius: 2px; }
+.zoom-controls .color-picker::-moz-color-swatch { border: none; border-radius: 2px; }
 .source {
 	font-size: .8rem;
 	font-style: italic;
 	opacity: .85;
+}
+.zoom-controls .color-reset {
+	margin-top: 10px;
 }
 
 /* A foreignObject clips whatever it holds to its own box, which would slice
@@ -231,4 +249,119 @@ div > p {
 
 .info .children {
 	font-style: italic;
+}
+
+/* the ancestor chart */
+.pedigree { display: block; }
+.pedigree .linage {
+	fill: none;
+	stroke: #222;
+	stroke-width: 2px;
+}
+/* the chart toggle, in the pad under the colour pickers */
+.zoom-controls button.active {
+	background: #222;
+}
+.zoom-controls svg {
+	width: 26px;
+	height: 26px;
+	stroke: #222;
+	stroke-width: 1.6;
+	stroke-linecap: round;
+	fill: none;
+	border: 1px solid #222;
+}
+
+.zoom-controls svg:hover {
+	stroke: white;
+}
+
+.zoom-controls svg.icon-filled {
+	stroke: none;
+	color: #222;
+	transition: transform 1s ease, color 1s ease, border-color .15s ease 1s;
+}
+
+.zoom-controls svg.icon-filled:hover {
+	color: white;
+}
+
+.zoom-controls button.active > svg.icon-filled {
+	color: white;
+	border-color: transparent;
+	transform: rotate(180deg);
+	transition: transform 1s ease, color 1s ease, border-color .15s ease;
+}
+
+/* a card reached from a link: outlined, with a ring that pulses outwards */
+@keyframes found-pulse {
+	from { box-shadow: 0 0 0 0 rgba(242, 183, 5, .9); }
+	to   { box-shadow: 0 0 0 22px rgba(242, 183, 5, 0); }
+}
+.found {
+	outline: 3px solid #f2b705;
+	outline-offset: 2px;
+	animation: found-pulse 1.2s ease-out 3;
+}
+
+/* names in the panel that go to that person's card */
+.info a {
+	color: inherit;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+/* a short message over the chart, e.g. when a link's person isn't on it */
+.notice {
+	position: absolute;
+	top: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 10;
+	max-width: 80%;
+	padding: .5rem .9rem;
+	border-radius: 4px;
+	background: #222;
+	color: #fff;
+	font-size: .85rem;
+	text-align: center;
+}
+/* the overview of the whole tree, bottom right */
+.minimap {
+	position: fixed;
+	right: 16px;
+	bottom: 16px;
+	z-index: 20;
+	width: 300px;
+	background: rgba(255, 255, 255, .95);
+	border: 1px solid #444;
+	border-radius: 6px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+	overflow: hidden;
+	cursor: pointer;
+	touch-action: none;     /* dragging on it moves the chart, not the page */
+}
+.minimap svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+.minimap .m-lines path {
+	fill: none;
+	stroke: #666;
+	stroke-width: .6px;
+	vector-effect: non-scaling-stroke;
+}
+/* the card colours, a shade deeper so they show at this size */
+.minimap .m-man     { fill: color-mix(in srgb, var(--man-color) 75%, black); }
+.minimap .m-woman   { fill: color-mix(in srgb, var(--woman-color) 75%, black); }
+.minimap .m-unknown { fill: color-mix(in srgb, hsl(210, 45%, 85%) 75%, black); }
+.minimap .m-view {
+	fill: rgba(4, 95, 180, .12);
+	stroke: #045FB4;
+	stroke-width: 1.5px;
+	vector-effect: non-scaling-stroke;
+}
+@media (max-width: 700px) {
+	.minimap { width: 180px; }
 }

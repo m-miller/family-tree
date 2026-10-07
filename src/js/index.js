@@ -622,6 +622,158 @@
 	}
 
 	/** Swap charts, keeping the controls pointed at whichever is showing. */
+	// ---------- the minimap ----------
+
+	// A small overview of the whole tree in the bottom-right corner: each card as
+	// a block in its colour, the lines between them, and a box marking what is on
+	// screen. The box follows every pan and zoom, however it happens; clicking or
+	// dragging on the minimap moves the chart there. Only on the full tree.
+	var MINIMAP_WIDTH = 300;          // pixels; the height follows the tree's shape
+	var MINIMAP_MIN_HEIGHT = 48;
+	var MINIMAP_MAX_HEIGHT = 200;
+	var SVG_NS = 'http://www.w3.org/2000/svg';
+	var minimap = null;               // { box, svg, lines, cards, view, observer }
+
+	function svgEl(name, attrs) {
+		var el = document.createElementNS(SVG_NS, name);
+		Object.keys(attrs || {}).forEach(function (key) { el.setAttribute(key, attrs[key]); });
+		return el;
+	}
+
+	/** The full tree's drawing group: everything inside it is in tree coordinates. */
+	function treeGroup() {
+		return document.querySelector('#graph > svg > g');
+	}
+
+	/**
+	 * The part of the tree that's on screen, in tree coordinates. The browser's
+	 * own screen-to-drawing mapping does the work, so window size, scrolling and
+	 * zoom are all accounted for without any arithmetic of our own.
+	 */
+	function visibleArea() {
+		var g = treeGroup();
+		var svg = g && g.ownerSVGElement;
+		if (!svg) return null;
+		var r = svg.getBoundingClientRect();
+		var left = Math.max(r.left, 0);
+		var top = Math.max(r.top, 0);
+		var right = Math.min(r.right, window.innerWidth);
+		var bottom = Math.min(r.bottom, window.innerHeight);
+		if (right <= left || bottom <= top) return null;   // chart scrolled out of sight
+		var toTree = g.getScreenCTM().inverse();
+		var a = new DOMPoint(left, top).matrixTransform(toTree);
+		var b = new DOMPoint(right, bottom).matrixTransform(toTree);
+		return { x: a.x, y: a.y, width: b.x - a.x, height: b.y - a.y };
+	}
+
+	function updateMinimapView() {
+		if (!minimap || minimap.box.style.display === 'none') return;
+		var v = visibleArea();
+		minimap.view.style.display = v ? '' : 'none';
+		if (!v) return;
+		minimap.view.setAttribute('x', v.x);
+		minimap.view.setAttribute('y', v.y);
+		minimap.view.setAttribute('width', v.width);
+		minimap.view.setAttribute('height', v.height);
+	}
+
+	/** Move the chart so that a point of the tree is in the middle of what's on screen. */
+	function centreTreeOn(point) {
+		var v = visibleArea();
+		if (!v || !chart || !chart.panBy) return;
+		var k = d3.zoomTransform(treeGroup().ownerSVGElement).k;
+		chart.panBy((v.x + v.width / 2 - point.x) * k, (v.y + v.height / 2 - point.y) * k);
+	}
+
+	function createMinimap() {
+		var box = document.createElement('div');
+		box.className = 'minimap';
+		box.title = 'The whole tree. Click or drag to move the chart.';
+		box.setAttribute('aria-label', 'Overview of the whole tree');
+		var svg = svgEl('svg', { preserveAspectRatio: 'xMidYMid meet' });
+		var lines = svgEl('g', { 'class': 'm-lines' });
+		var cards = svgEl('g', { 'class': 'm-cards' });
+		var view = svgEl('rect', { 'class': 'm-view' });
+		svg.appendChild(lines);
+		svg.appendChild(cards);
+		svg.appendChild(view);
+		box.appendChild(svg);
+		document.body.appendChild(box);
+
+		// pressing or dragging moves the chart to that spot
+		var dragging = false;
+		function pointAt(event) {
+			return new DOMPoint(event.clientX, event.clientY).matrixTransform(svg.getScreenCTM().inverse());
+		}
+		box.addEventListener('pointerdown', function (event) {
+			if (event.button !== 0) return;
+			dragging = true;
+			box.setPointerCapture(event.pointerId);
+			event.preventDefault();
+			centreTreeOn(pointAt(event));
+		});
+		box.addEventListener('pointermove', function (event) {
+			if (dragging) centreTreeOn(pointAt(event));
+		});
+		['pointerup', 'pointercancel'].forEach(function (type) {
+			box.addEventListener(type, function () { dragging = false; });
+		});
+		// a press here is navigation, not a click on the page: leave the info panel open
+		box.addEventListener('click', function (event) { event.stopPropagation(); });
+
+		window.addEventListener('resize', updateMinimapView);
+		window.addEventListener('scroll', updateMinimapView, { passive: true });
+		return { box: box, svg: svg, lines: lines, cards: cards, view: view, observer: null };
+	}
+
+	/** Draw the minimap from the full tree as it is now. Called after every redraw. */
+	function buildMinimap() {
+		var g = treeGroup();
+		if (!g) return;
+		if (!minimap) minimap = createMinimap();
+		minimap.box.style.display = '';
+		minimap.lines.textContent = '';
+		minimap.cards.textContent = '';
+
+		Array.prototype.forEach.call(g.querySelectorAll('path'), function (path) {
+			if (getComputedStyle(path).display === 'none') return;   // links dTree hides
+			minimap.lines.appendChild(svgEl('path', { d: path.getAttribute('d') }));
+		});
+		Array.prototype.forEach.call(g.querySelectorAll('foreignObject'), function (node) {
+			var card = node.querySelector('div.man, div.woman, div.unknown');
+			if (!card) return;
+			var kind = card.classList.contains('man') ? 'man' : card.classList.contains('woman') ? 'woman' : 'unknown';
+			minimap.cards.appendChild(svgEl('rect', {
+				x: parseFloat(node.getAttribute('x')),
+				y: parseFloat(node.getAttribute('y')),
+				width: parseFloat(node.getAttribute('width')),
+				height: parseFloat(node.getAttribute('height')),
+				'class': 'm-' + kind
+			}));
+		});
+
+		// fit the whole tree, with a little room round the edge
+		var b = g.getBBox();
+		var pad = Math.max(b.width, b.height) * 0.02;
+		var w = b.width + pad * 2;
+		var h = b.height + pad * 2;
+		minimap.svg.setAttribute('viewBox', [b.x - pad, b.y - pad, w, h].join(' '));
+		var height = Math.round(Math.max(MINIMAP_MIN_HEIGHT, Math.min(MINIMAP_MAX_HEIGHT, MINIMAP_WIDTH * h / w)));
+		minimap.box.style.height = height + 'px';
+
+		// follow every change to the chart's pan and zoom
+		if (minimap.observer) minimap.observer.disconnect();
+		minimap.observer = new MutationObserver(updateMinimapView);
+		minimap.observer.observe(g, { attributes: true, attributeFilter: ['transform'] });
+		updateMinimapView();
+	}
+
+	function hideMinimap() {
+		if (!minimap) return;
+		minimap.box.style.display = 'none';
+		if (minimap.observer) minimap.observer.disconnect();
+	}
+
 	function draw() {
 		var graph = document.getElementById('graph');
 		var panel = graph.querySelector('.info');
@@ -635,6 +787,11 @@
 		} else {
 			mode = 'descendants';
 			drawDescendants();
+		}
+		if (mode === 'descendants') {
+			buildMinimap();
+		} else {
+			hideMinimap();
 		}
 		updateModeButton();
 	}
@@ -757,6 +914,7 @@
 		drawDescendants();
 		addZoomControls(chart);
 		addCardTilt(document.getElementById('graph'));
+		buildMinimap();
 
 		// The panel can close several ways (the cross, a click elsewhere, switching
 		// charts), so watch for it going rather than hooking each one.
