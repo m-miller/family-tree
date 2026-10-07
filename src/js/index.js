@@ -628,9 +628,9 @@
 	// a block in its colour, the lines between them, and a box marking what is on
 	// screen. The box follows every pan and zoom, however it happens; clicking or
 	// dragging on the minimap moves the chart there. Only on the full tree.
-	var MINIMAP_WIDTH = 300;          // pixels; the height follows the tree's shape
-	var MINIMAP_MIN_HEIGHT = 48;
-	var MINIMAP_MAX_HEIGHT = 200;
+	var MINIMAP_WIDTH = 450;          // pixels, matching .minimap in the CSS; the height follows the tree's shape
+	var MINIMAP_MIN_HEIGHT = 72;
+	var MINIMAP_MAX_HEIGHT = 300;
 	var SVG_NS = 'http://www.w3.org/2000/svg';
 	var minimap = null;               // { box, svg, lines, cards, view, observer }
 
