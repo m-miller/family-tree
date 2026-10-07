@@ -336,7 +336,6 @@ div > p {
 	background: rgba(255, 255, 255, .95);
 	border: 1px solid #444;
 	border-radius: 6px;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
 	overflow: hidden;
 	cursor: pointer;
 	touch-action: none;     /* dragging on it moves the chart, not the page */
