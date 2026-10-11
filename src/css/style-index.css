@@ -157,7 +157,7 @@ div > p {
 .zoom-controls {
 	position: fixed;
 	left: 20px;
-	top: 200px;
+	top: 170px;
 	display: grid;
 	grid-template-columns: repeat(3, auto);
 	justify-items: center;
