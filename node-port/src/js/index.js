@@ -392,6 +392,7 @@
 				});
 			}
 
+			if (!control.mode) button.classList.add('nav-move');   // hidden on phones
 			bar.appendChild(button);
 		});
 		
@@ -422,7 +423,10 @@
 			card.style.transform = '';
 		}
 
-		graph.addEventListener('mousemove', function (event) {
+		graph.addEventListener('pointermove', function (event) {
+			// Only a mouse tilts the cards. A finger never 'leaves' a card the way
+			// a mouse does, so a tapped card would stay tilted.
+			if (event.pointerType !== 'mouse') return;
 			var card = event.target.closest ? event.target.closest('.man, .woman, .unknown') : null;
 
 			if (card !== hovered) {
@@ -455,7 +459,7 @@
 		});
 
 		// leaving the graph entirely, or the window
-		graph.addEventListener('mouseleave', function () {
+		graph.addEventListener('pointerleave', function () {
 			release(hovered);
 			hovered = null;
 		});
@@ -594,34 +598,107 @@
 	var treeData = null;
 	var modeButton = null;
 
+	// ---------- phones ----------
+
+	// Narrow screens, and touch screens turned on their side: the same
+	// condition as the stylesheet's phone rules.
+	var PHONE = '(max-width: 700px), (hover: none) and (max-height: 500px)';
+
+	function isPhone() {
+		return window.matchMedia(PHONE).matches;
+	}
+
+	/**
+	 * The chart's own size, in its drawing units. On a desktop it's the 1200 x 800
+	 * the layout was tuned for. On a phone it matches the space left below the
+	 * header, one unit to a pixel, so the chart fills the screen rather than a
+	 * 3:2 strip, and the cards come out larger.
+	 */
+	function chartSize() {
+		if (!isPhone()) return { width: 1200, height: 800 };
+		var graph = document.getElementById('graph');
+		var top = graph.getBoundingClientRect().top + window.scrollY;
+		return {
+			width: Math.round(graph.clientWidth),
+			height: Math.max(240, Math.round(window.innerHeight - top - 8))
+		};
+	}
+
+	/** On a phone, make the chart element exactly that tall; on a desktop leave it to the CSS. */
+	function fitChartHeight(size) {
+		var svg = document.querySelector('#graph > svg');
+		if (svg) svg.style.height = isPhone() ? size.height + 'px' : '';
+	}
+
+	/**
+	 * On a phone the info panel is a sheet across the bottom of the screen. If
+	 * the card it belongs to ends up underneath it, move the chart up so the
+	 * card sits in the middle of the clear space above the sheet.
+	 */
+	function liftAboveSheet(node) {
+		if (!isPhone() || !chart || !chart.panBy || !node || !node.isConnected) return;
+		var sheet = document.querySelector('.info');
+		var svg = document.querySelector('#graph > svg');
+		if (!sheet || !svg) return;
+		var top = Math.max(svg.getBoundingClientRect().top, 0);
+		var sheetTop = sheet.getBoundingClientRect().top;
+		var card = node.getBoundingClientRect();
+		if (card.top > top + 8 && card.bottom < sheetTop - 8) return;   // already in clear view
+		var px = top + (sheetTop - top) / 2 - (card.top + card.height / 2);
+		// panBy works in drawing units: one per pixel on a phone, but measure to be sure
+		var unitsPerPx = svg.viewBox.baseVal.width / svg.getBoundingClientRect().width;
+		chart.panBy(0, px * unitsPerPx);
+	}
+
+	// Turning a phone round changes the space, so the chart is redrawn to fit.
+	// Only width changes count: scrolling on a phone resizes the window's height
+	// as the address bar comes and goes.
+	var lastWidth = window.innerWidth;
+	var phoneLayout = isPhone();
+	var redrawTimer = null;
+	window.addEventListener('resize', function () {
+		if (window.innerWidth === lastWidth) return;
+		lastWidth = window.innerWidth;
+		var nowPhone = isPhone();
+		if (!treeData || (!nowPhone && !phoneLayout)) return;   // desktops keep their fixed layout
+		phoneLayout = nowPhone;
+		window.clearTimeout(redrawTimer);
+		redrawTimer = window.setTimeout(draw, 200);
+	});
+
 	function drawDescendants() {
+		var size = chartSize();
 		chart = dTree.init(treeData, {
 			target: '#graph',
 			debug: false,
 			hideMarriageNodes: true,
 			startZoom: Math.pow(1 / ZOOM_STEP, START_ZOOM_OUT_PRESSES),
 			marriageNodeSize: 3,
-			height: 800,
-			width: 1200,
+			height: size.height,
+			width: size.width,
 			callbacks: {
-				nodeClick: function (name, extra) { showInfo(this, name, extra); },
+				nodeClick: function (name, extra) { showInfo(this, name, extra); liftAboveSheet(this); },
 				textRenderer: renderNodeText,
 				nodeHeightSeperation: function (nodeWidth, nodeMaxHeight) {
 					return nodeMaxHeight + GENERATION_GAP;
 				}
 			}
 		});
+		fitChartHeight(size);
 		addSpouseStyles();
 	}
 
 	function drawAncestors(person) {
+		var size = chartSize();
 		chart = window.Pedigree.render(document.getElementById('graph'), person, {
+			width: size.width,
+			height: size.height,
 			textRenderer: renderNodeText,
-			onNodeClick: function (name, extra) { showInfo(this, name, extra); }
+			onNodeClick: function (name, extra) { showInfo(this, name, extra); liftAboveSheet(this); }
 		});
+		fitChartHeight(size);
 	}
 
-	/** Swap charts, keeping the controls pointed at whichever is showing. */
 	// ---------- the minimap ----------
 
 	// A small overview of the whole tree in the bottom-right corner: each card as
@@ -774,6 +851,7 @@
 		if (minimap.observer) minimap.observer.disconnect();
 	}
 
+	/** Swap charts, keeping the controls pointed at whichever is showing. */
 	function draw() {
 		var graph = document.getElementById('graph');
 		var panel = graph.querySelector('.info');
@@ -888,6 +966,7 @@
 		foundTimer = window.setTimeout(function () { card.classList.remove('found'); }, FOUND_MS);
 
 		showInfo(node, person.name, person.extra);
+		if (isPhone()) window.setTimeout(function () { liftAboveSheet(node); }, 760);
 		return true;
 	}
 
