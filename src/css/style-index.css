@@ -374,7 +374,7 @@ div > p {
 	   which made the page a few pixels taller than the screen */
 	#graph > svg { display: block; }
 
-	/* pinch and drag do the moving; keep only the colour and chart-switch row */
+	/* pinch and drag do the moving */
 	.zoom-controls .nav-move { display: none; }
 	.zoom-controls { top: auto; bottom: 12px; left: 12px; }
 

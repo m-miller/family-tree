@@ -76,7 +76,7 @@ foreignObject {
 	   positioned against. Setting it puts every marriage line off centre. */
 }
 foreignObject > div {
-	border-radius: 5px;
+	border-radius: 10px;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -332,11 +332,10 @@ div > p {
 	right: 16px;
 	bottom: 16px;
 	z-index: 20;
-	width: 300px;
+	width: 450px;           /* matches MINIMAP_WIDTH in index.js */
 	background: rgba(255, 255, 255, .95);
 	border: 1px solid #444;
 	border-radius: 6px;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
 	overflow: hidden;
 	cursor: pointer;
 	touch-action: none;     /* dragging on it moves the chart, not the page */
@@ -362,6 +361,42 @@ div > p {
 	stroke-width: 1.5px;
 	vector-effect: non-scaling-stroke;
 }
-@media (max-width: 700px) {
-	.minimap { width: 180px; }
+/* ---------- phones ----------
+   Narrow screens, and touch screens turned on their side. index.js uses the
+   same condition to size the chart, so keep the two the same. */
+@media (max-width: 700px), (hover: none) and (max-height: 500px) {
+	/* a smaller header: the same words, less of the screen */
+	.site-icon { width: 36px; height: 36px; margin: .6rem .5rem 0 .6rem; }
+	h1 { font-size: 1.4rem; top: -.6rem; }
+	#head-info p { margin: .4rem .6rem; font-size: .8rem; line-height: 1.35; }
+
+	/* no gap under the chart: an inline SVG leaves room for text descenders,
+	   which made the page a few pixels taller than the screen */
+	#graph > svg { display: block; }
+
+	/* pinch and drag do the moving */
+	.zoom-controls .nav-move { display: none; }
+	.zoom-controls { top: auto; bottom: 12px; left: 12px; }
+
+	/* no minimap on a phone */
+	.minimap { display: none; }
+
+	/* the info panel becomes a sheet across the bottom of the screen */
+	.info {
+		position: fixed;
+		top: auto;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		width: auto;
+		max-height: 55vh;
+		overflow-y: auto;
+		box-sizing: border-box;
+		border-radius: 12px 12px 0 0;
+		box-shadow: 0 -4px 16px rgba(0, 0, 0, .35);
+		padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+		z-index: 30;
+	}
+	/* the close button sits inside the sheet, and is easier to hit */
+	#close { top: 10px; right: 10px; transform: scale(1.4); }
 }
