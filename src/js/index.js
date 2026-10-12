@@ -470,7 +470,7 @@
 	// once, and are remembered per browser.
 	var color_KEYS = {
 		man: { variable: '--man-color', fallback: '#d4d4d4', label: 'Color for men' },
-		woman: { variable: '--woman-color', fallback: '#91ee91', label: 'Color for women' }
+		woman: { variable: '--woman-color', fallback: '#2a7e2a', label: 'Color for women' }
 	};
 	var color_STORE = 'familyTreeCardcolors';
 
